@@ -1,0 +1,74 @@
+name: Deploy project_template_app
+
+on:
+  push:
+    tags:
+      - 'deploy-project_template_app-*'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # .env wird ins Repo-Root geschrieben und per rsync mitkopiert.
+      - name: Create .env
+        run: |
+          cat <<EOF > .env
+          # --- DB ---
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+
+          # --- Django / App ---
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          ENV_TYPE=production
+          DEBUG=False
+          ALLOWED_HOSTS=queue.kerzenziehen.ch,localhost,127.0.0.1
+          CSRF_TRUSTED_ORIGINS=https://queue.kerzenziehen.ch
+          PUBLIC_ORIGIN=https://queue.kerzenziehen.ch
+
+          # optional (falls verwendet):
+          ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}
+
+          # --- Mail (Gmail SMTP via App Password) ---
+          EMAIL_HOST=smtp.gmail.com
+          EMAIL_PORT=587
+          EMAIL_USE_TLS=True
+          EMAIL_USE_SSL=False
+          EMAIL_USER=${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+          DEFAULT_FROM_EMAIL=${{ secrets.EMAIL_USER }}
+          EOF
+
+      - name: Rsync project to server
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          remote_host: ${{ secrets.SSH_HOST_NEW }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_key:  ${{ secrets.SSH_PRIVATE_KEY }}
+          switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml'
+          path: "./"
+          remote_path: "/srv/qrqueue"
+
+      - name: Build & restart containers
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST_NEW }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            cd /srv/qrqueue
+            docker compose pull || true
+            docker compose build
+            docker compose up -d --remove-orphans
+
+            # DB-Migrationen
+            docker compose exec -T qrqueue_app python manage.py migrate --noinput
+
+            # kurzer Healthcheck (optional)
+            curl -fsS http://localhost:8124/health/ || (echo "Healthcheck failed" && exit 1)

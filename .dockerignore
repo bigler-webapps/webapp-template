@@ -1,0 +1,20 @@
+# Node stuff: do not send to Docker build context
+frontend/node_modules
+frontend/.pnpm-store
+frontend/.npm
+frontend/build
+frontend/dist
+
+# Python virtual envs
+.venv
+backend/.venv
+
+# Python cache
+**/__pycache__
+**/*.py[cod]
+
+# Git & misc
+.git
+.gitignore
+*.log
+.env

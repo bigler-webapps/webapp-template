@@ -1,0 +1,51 @@
+
+version: "3.9"
+
+services:
+  project_template_app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: django_backend_project_template
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    volumes:
+      - media_volume:/app/backend/media
+    networks:
+      - app-network
+      - proxy
+    restart: unless-stopped
+
+  db:
+    image: postgis/postgis:14-3.1
+    container_name: postgis_db_template
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis_server_template
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+  proxy:
+    external: true
+
+volumes:
+  postgres_data:
+  media_volume:
