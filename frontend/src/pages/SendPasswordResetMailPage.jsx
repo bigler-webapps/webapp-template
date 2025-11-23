@@ -20,15 +20,28 @@ const SendPasswordResetMailPage = () => {
     event.preventDefault();
     setMessage('');
     setError('');
+
     try {
+      // allauth-headless: Passwort-Reset anstossen
       const res = await axios.post(
-        '/api/users/reset-request/',
+        '/_allauth/auth/password/reset/',
         { email },
         { withCredentials: true },
       );
-      setMessage(res.data.detail || 'Reset email sent.');
+
+      // allauth liefert je nach Konfiguration kaum Details zurück,
+      // daher lieber eine generische Erfolgsmeldung anzeigen.
+      const detail =
+        res.data?.detail ||
+        'If an account with that email exists, a reset link has been sent.';
+
+      setMessage(detail);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error sending reset email.');
+      const detail =
+        err.response?.data?.detail ||
+        err.response?.data?.non_field_errors?.join(' ') ||
+        'Error sending reset email.';
+      setError(detail);
     }
   };
 
@@ -38,8 +51,16 @@ const SendPasswordResetMailPage = () => {
         <title>PROJECT_NAME – Reset password</title>
       </Helmet>
 
-      {message && <Typography color="primary">{message}</Typography>}
-      {error && <Typography color="error">{error}</Typography>}
+      {message && (
+        <Typography color="primary" gutterBottom>
+          {message}
+        </Typography>
+      )}
+      {error && (
+        <Typography color="error" gutterBottom>
+          {error}
+        </Typography>
+      )}
 
       <Box
         component="form"

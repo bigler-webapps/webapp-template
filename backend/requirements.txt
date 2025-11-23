@@ -8,3 +8,5 @@ python-dotenv>=1.0
 gunicorn>=22.0
 daphne>=4.0
 whitenoise>=6.0
+django-allauth[mfa]
+requests>=2.31

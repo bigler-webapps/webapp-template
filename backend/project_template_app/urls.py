@@ -8,7 +8,7 @@ from users.views import csrf_token_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
+    path("api/auth/", include("allauth.headless.urls")), 
     path("api/users/", include("users.urls")),
     path("api/csrf/", csrf_token_view, name="csrf-token"),
 

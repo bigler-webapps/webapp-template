@@ -2,7 +2,7 @@
 import React, { useContext } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../AuthContext';
+import { AuthContext } from '../auth/AuthContext';
 
 // Renders the main app header with navigation and auth actions
 const Header = () => {
@@ -28,7 +28,7 @@ const Header = () => {
 
         {user ? (
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button color="inherit" component={RouterLink} to="/profile">
+            <Button color="inherit" component={RouterLink} to="/account">
               Profile
             </Button>
             <Button color="inherit" component={RouterLink} to="/user-management">

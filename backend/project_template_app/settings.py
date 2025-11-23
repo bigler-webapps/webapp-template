@@ -87,13 +87,32 @@ DATABASES = {
 }
 
 # Email
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# allauth Account settings
+ACCOUNT_LOGIN_METHODS = {"email"}   # nur E-Mail-Login
+
+# Welche Felder beim Signup vorhanden sind (und ob sie Pflicht sind, * = required)
+ACCOUNT_SIGNUP_FIELDS = [
+    "email*",
+    "password*",
+]
+
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = "optional"  # oder "mandatory"
+ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
+
 
 # Channels / Redis
 REDIS_HOST = os.environ.get("REDIS_HOST", "127.0.0.1")
@@ -108,7 +127,18 @@ CHANNEL_LAYERS = {
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
+HEADLESS_ONLY = True  # keine klassischen allauth-HTML-Views, nur API
+HEADLESS_FRONTEND_URLS = {
+    # Links in Mails, z.B. Confirm / Reset, zeigen auf dein React-Frontend
+    "account_confirm_email": "https://project_template.example.com/email-verify/{key}",
+    "account_reset_password_from_key": "https://project_template.example.com/password-reset/{key}",
+}
+HEADLESS_CLIENTS = ["browser"]
+
+MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
+MFA_WEBAUTHN_RP_NAME = "Project Template" 
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -130,11 +160,18 @@ INSTALLED_APPS = [
     "channels",
 
     "users",
+
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.mfa",
+    "allauth.headless",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
