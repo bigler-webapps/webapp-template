@@ -7,12 +7,15 @@ import { AuthContext } from '../auth/AuthContext';
 // Renders the main app header with navigation and auth actions
 const Header = () => {
   const { user, logout } = useContext(AuthContext);
+  
+
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  
+  async function handleLogout() {
+    await logout();       // uses the logout from AuthContext (calls logoutSession + setUser(null))
+    navigate('/login');   // then redirect to login
+  }
 
   return (
     <AppBar position="static">

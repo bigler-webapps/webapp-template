@@ -1,81 +1,65 @@
-// src/auth/components/PasswordChangeForm.jsx
 import React, { useState } from 'react';
-import { Box, TextField, Button } from '@mui/material';
+import { Box, TextField, Button, Stack } from '@mui/material';
 
-const PasswordChangeForm = ({ onSubmit, submitting = false }) => {
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword1, setNewPassword1] = useState('');
-  const [newPassword2, setNewPassword2] = useState('');
-  const [localError, setLocalError] = useState('');
+/**
+ * A simplified form to handle password changes.
+ * Does not require password confirmation.
+ */
+const PasswordChangeForm = ({ onSubmit }) => {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setLocalError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    if (!newPassword1 || !newPassword2) {
-      setLocalError('Please enter the new password twice.');
-      return;
-    }
+    if (!onSubmit) return;
 
-    if (newPassword1 !== newPassword2) {
-      setLocalError('The new passwords do not match.');
-      return;
-    }
-
-    if (onSubmit) {
-      onSubmit(oldPassword, newPassword1);
+    setSubmitting(true);
+    try {
+      // Send the current and new password to the parent component
+      await onSubmit(currentPassword, newPassword);
+      // Reset form fields on success
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (err) {
+      // Errors are generally handled by the parent
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
-    >
-      {localError && (
-        <Box sx={{ colour: 'error.main', fontSize: 14 }}>
-          {localError}
+    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 500 }}>
+      <Stack spacing={2}>
+        <TextField
+          label="Current Password"
+          type="password"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          required
+          fullWidth
+          disabled={submitting}
+        />
+        <TextField
+          label="New Password"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          required
+          fullWidth
+          disabled={submitting}
+        />
+        <Box>
+          <Button 
+            type="submit" 
+            variant="contained" 
+            disabled={submitting}
+          >
+            {submitting ? 'Changing...' : 'Change Password'}
+          </Button>
         </Box>
-      )}
-
-      <TextField
-        label="Current password"
-        type="password"
-        fullWidth
-        autoComplete="current-password"
-        value={oldPassword}
-        onChange={(e) => setOldPassword(e.target.value)}
-        disabled={submitting}
-      />
-
-      <TextField
-        label="New password"
-        type="password"
-        fullWidth
-        autoComplete="new-password"
-        value={newPassword1}
-        onChange={(e) => setNewPassword1(e.target.value)}
-        disabled={submitting}
-      />
-
-      <TextField
-        label="Confirm new password"
-        type="password"
-        fullWidth
-        autoComplete="new-password"
-        value={newPassword2}
-        onChange={(e) => setNewPassword2(e.target.value)}
-        disabled={submitting}
-      />
-
-      <Button
-        type="submit"
-        variant="contained"
-        disabled={submitting}
-      >
-        Change password
-      </Button>
+      </Stack>
     </Box>
   );
 };

@@ -3,7 +3,7 @@ services:
     ports:
       - "8125:8000"
     volumes:
-    #  - ./backend:/app/backend
+    - ./backend:/app/backend
     - ./backend/media:/app/backend/media
     environment:
       - ENV_TYPE=development

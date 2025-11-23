@@ -1,4 +1,3 @@
-// src/auth/components/SecurityComponent.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -10,20 +9,34 @@ import {
 } from '@mui/material';
 import PasswordChangeForm from './PasswordChangeForm';
 import SocialLoginButtons from './SocialLoginButtons';
-import { startSocialLogin } from '../authApi';
-// Passkeys später: import { registerPasskey } from '../authApi';
+import { authApi } from '../authApi'; 
 
 const SecurityComponent = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const handleSocialClick = (provider) => {
+  const handleSocialClick = async (provider) => {
     setMessage('');
     setError('');
     try {
-      startSocialLogin(provider);
+      // FIX: Await the async function to catch network errors
+      await authApi.startSocialLogin(provider);
     } catch (e) {
       setError(e.message || 'Social login could not be started.');
+    }
+  };
+
+  const handlePasswordChange = async (currentPassword, newPassword) => {
+    setMessage('');
+    setError('');
+    try {
+      await authApi.changePassword(currentPassword, newPassword);
+      setMessage('Password changed successfully.');
+    } catch (err) {
+      const errorMsg = err.response?.data?.detail || 
+                       err.message || 
+                       'Could not change password.';
+      setError(errorMsg);
     }
   };
 
@@ -40,14 +53,16 @@ const SecurityComponent = () => {
         </Alert>
       )}
 
-      {/* Passwort ändern */}
+      {/* Password Change Section */}
       <Typography variant="h6" gutterBottom>
         Password
       </Typography>
-      <PasswordChangeForm />
+      
+      <PasswordChangeForm onSubmit={handlePasswordChange} />
+      
       <Divider sx={{ my: 3 }} />
 
-      {/* Social Logins */}
+      {/* Social Logins Section */}
       <Typography variant="h6" gutterBottom>
         Social logins
       </Typography>
@@ -58,7 +73,7 @@ const SecurityComponent = () => {
 
       <Divider sx={{ my: 3 }} />
 
-      {/* Passkeys – Platzhalter */}
+      {/* Passkeys Section (Placeholder) */}
       <Typography variant="h6" gutterBottom>
         Passkeys (coming soon)
       </Typography>

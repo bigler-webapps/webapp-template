@@ -12,6 +12,7 @@ services:
     environment:
       - REDIS_HOST=redis
     volumes:
+      
       - media_volume:/app/backend/media
     networks:
       - app-network

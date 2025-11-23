@@ -1,4 +1,3 @@
-// src/auth/pages/LoginPage.jsx
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -18,7 +17,6 @@ const LoginPage = () => {
     setError('');
     setSubmitting(true);
     try {
-      // FIX: Pass identifier and password as separate arguments, not as an object
       const data = await authApi.loginWithPassword(identifier, password);
       login(data.user);
       navigate('/');
@@ -38,11 +36,11 @@ const LoginPage = () => {
   };
 
   const handleSocialLogin = (providerKey) => {
-    // Call the function that handles the redirect via window.location.href
+    setError('');
     try {
       authApi.startSocialLogin(providerKey);
     } catch (err) {
-      // eslint-disable-next-line no-console
+      // This will only fire on immediate client-side errors
       console.error('Social login init failed', err);
       setError('Could not start social login.');
     }
@@ -64,7 +62,7 @@ const LoginPage = () => {
         onSubmit={handleSubmit}
         onForgotPassword={handleForgotPassword}
         onSocialLogin={handleSocialLogin}
-        error={undefined}              // Error schon oben gerendert
+        error={undefined}
         disabled={submitting}
       />
     </NarrowPage>
