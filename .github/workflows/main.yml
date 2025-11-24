@@ -22,11 +22,11 @@ jobs:
           # =======================================================
           # Einfach alle Domains durch Leerzeichen getrennt auflisten.
           # Die erste Domain wird oft als Hauptdomain betrachtet.
-          APP_DOMAINS="jg-ferien.ch www.jg-ferien.ch jg-fegbern.ch www.jg-fegbern.ch jg-ferien.sys.hram.ch"
+          APP_DOMAINS="bigler-consult.ch www.bigler-consult.ch"
           
           # Name des Routers/Containers (muss unique sein auf dem Server)
-          APP_NAME="jg-ferien-prod"
-          CTR_PREFIX="jg_ferien_prod"
+          APP_NAME="bigler-consult-prod"
+          CTR_PREFIX="bigler_consult_prod"
           
           # =======================================================
           # 2. AUTOMATISCHE BERECHNUNG (Nicht anfassen)
