@@ -12,63 +12,125 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # .env wird ins Repo-Root geschrieben und per rsync mitkopiert.
-      - name: Create .env
+      # ---------------------------------------------------------
+      # SCHRITT 1: Konfiguration & .env generieren (Zentralisiert)
+      # ---------------------------------------------------------
+      - name: Generate Configuration and .env
         run: |
+          # =======================================================
+          # 1. ZENTRALE KONFIGURATION (Hier Domains anpassen!)
+          # =======================================================
+          # Einfach alle Domains durch Leerzeichen getrennt auflisten.
+          # Die erste Domain wird oft als Hauptdomain betrachtet.
+          APP_DOMAINS="jg-ferien.ch www.jg-ferien.ch jg-fegbern.ch www.jg-fegbern.ch jg-ferien.sys.hram.ch"
+          
+          # Name des Routers/Containers (muss unique sein auf dem Server)
+          APP_NAME="jg-ferien-prod"
+          CTR_PREFIX="jg_ferien_prod"
+          
+          # =======================================================
+          # 2. AUTOMATISCHE BERECHNUNG (Nicht anfassen)
+          # =======================================================
+          
+          # A) Django ALLOWED_HOSTS (Komma-getrennt)
+          # Wandelt "a b c" in "a,b,c" um
+          DJANGO_HOSTS_CSV=$(echo "$APP_DOMAINS" | tr ' ' ',')
+          
+          # B) CSRF/CORS URLs (Mit https:// Prefix)
+          # Wandelt "a b" in "https://a,https://b" um
+          CSRF_URLS=""
+          for d in $APP_DOMAINS; do
+            if [ -z "$CSRF_URLS" ]; then CSRF_URLS="https://$d"; else CSRF_URLS="$CSRF_URLS,https://$d"; fi
+          done
+          
+          # C) Traefik Router Rule
+          # Baut den String: Host(`a`) || Host(`b`) ...
+          # Wir nutzen Backticks (\`) für Traefik, die wir in Bash escapen müssen.
+          TRAEFIK_RULE=""
+          for d in $APP_DOMAINS; do
+            PART="Host(\`$d\`)"
+            if [ -z "$TRAEFIK_RULE" ]; then TRAEFIK_RULE="$PART"; else TRAEFIK_RULE="$TRAEFIK_RULE || $PART"; fi
+          done
+          
+          # Erste Domain als Hauptdomain für Zertifikat (optional)
+          MAIN_DOMAIN=$(echo "$APP_DOMAINS" | awk '{print $1}')
+
+          echo "---------------------------------------------"
+          echo "Config Generated:"
+          echo "Domains: $APP_DOMAINS"
+          echo "Traefik Rule: $TRAEFIK_RULE"
+          echo "---------------------------------------------"
+
+          # =======================================================
+          # 3. .ENV DATEI SCHREIBEN
+          # =======================================================
           cat <<EOF > .env
-          # --- DB ---
+          # --- Secrets ---
           DB_USER=${{ secrets.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           DB_NAME=${{ secrets.DB_NAME }}
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_PORT=${{ secrets.DB_PORT }}
-
-          # --- Django / App ---
+          DB_HOST=db
+          DB_PORT=5432
+          
           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          
+          # --- Mail ---
+          EMAIL_HOST=${{ secrets.MAIL_HOST }}
+          EMAIL_PORT=${{ secrets.MAIL_PORT }}
+          EMAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }}
+          EMAIL_USER=${{ secrets.MAIL_USERNAME }}
+          EMAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          
+          
+          # --- Infrastructure Auto-Config ---
           ENV_TYPE=production
-          DEBUG=False
-          ALLOWED_HOSTS=queue.kerzenziehen.ch,localhost,127.0.0.1
-          CSRF_TRUSTED_ORIGINS=https://queue.kerzenziehen.ch
-          PUBLIC_ORIGIN=https://queue.kerzenziehen.ch
-
-          # optional (falls verwendet):
-          ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}
-
-          # --- Mail (Gmail SMTP via App Password) ---
-          EMAIL_HOST=smtp.gmail.com
-          EMAIL_PORT=587
-          EMAIL_USE_TLS=True
-          EMAIL_USE_SSL=False
-          EMAIL_USER=${{ secrets.EMAIL_USER }}
-          EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
-          DEFAULT_FROM_EMAIL=${{ secrets.EMAIL_USER }}
+          CONTAINER_NAME_PREFIX=${CTR_PREFIX}
+          ROUTER_NAME=${APP_NAME}
+          
+          # Generierte Domain-Listen
+          DOMAIN_URL=${MAIN_DOMAIN}
+          DJANGO_ALLOWED_HOSTS=${DJANGO_HOSTS_CSV}
+          CSRF_TRUSTED_URLS=${CSRF_URLS}
+          
+          # Die komplexe Traefik-Regel
+          # Wir nutzen keine Anführungszeichen im EOF Block für die Variable,
+          # damit Docker Compose den String roh bekommt.
+          TRAEFIK_ROUTER_RULE=${TRAEFIK_RULE}
+          
+          IMAGE_TAG=latest
           EOF
 
+      # ---------------------------------------------------------
+      # SCHRITT 2: Code kopieren
+      # ---------------------------------------------------------
       - name: Rsync project to server
         uses: burnett01/rsync-deployments@7.0.2
         with:
-          remote_host: ${{ secrets.SSH_HOST_NEW }}
+          remote_host: ${{ secrets.SSH_HOST }}
           remote_user: ${{ secrets.SSH_USER }}
           remote_key:  ${{ secrets.SSH_PRIVATE_KEY }}
-          switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml'
+          switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml' --exclude '.git' --exclude 'frontend/node_modules'
           path: "./"
-          remote_path: "/srv/qrqueue"
+          # Standardisierter Pfad
+          remote_path: "/srv/apps/project_template"
 
+      # ---------------------------------------------------------
+      # SCHRITT 3: Docker Start
+      # ---------------------------------------------------------
       - name: Build & restart containers
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.SSH_HOST_NEW }}
+          host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
-            cd /srv/qrqueue
-            docker compose pull || true
-            docker compose build
-            docker compose up -d --remove-orphans
+            
+            mkdir -p /srv/apps/project_template
+            cd /srv/apps/project_template
+            
+            docker compose up -d --build --remove-orphans
 
-            # DB-Migrationen
-            docker compose exec -T qrqueue_app python manage.py migrate --noinput
-
-            # kurzer Healthcheck (optional)
-            curl -fsS http://localhost:8124/health/ || (echo "Healthcheck failed" && exit 1)
+            # Migrationen
+            # Service Name aus docker-compose prüfen! (Ich nehme template_app an)
+            docker compose exec -T template_app python manage.py migrate --noinput
