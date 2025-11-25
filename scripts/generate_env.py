@@ -27,7 +27,6 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     use_traefik = env_config.get("use_traefik", False)
     
     # --- 1. Base Variables ---
-    # In CI, secrets come from Env Vars. In Local, we use defaults from YAML.
     is_local = (env_name == "local")
     local_defaults = env_config.get("defaults", {})
 
@@ -49,10 +48,12 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
 
     # App
     env_content.append(f"\n# --- Django ---")
-    # For local, we generate a dummy key if not present
-    env_content.append(f"DJANGO_SECRET_KEY={resolve('DJANGO_SECRET_KEY', required_in_prod=True) or 'dev-insecure-key'}")
+    env_content.append(f"DJANGO_SECRET_KEY={resolve('DJANGO_SECRET_KEY', required_in_prod=True)}")
     env_content.append(f"ENV_TYPE={env_name}")
-    env_content.append(f"DEBUG={resolve('DEBUG') or 'False'}")
+    
+    # FIX: DEBUG is optional in Prod (defaults to False if missing)
+    debug_val = resolve('DEBUG', required_in_prod=False)
+    env_content.append(f"DEBUG={debug_val or 'False'}")
 
     # Mail
     env_content.append(f"\n# --- Mail ---")
@@ -66,10 +67,9 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
         env_content.append(f"EMAIL_PASSWORD={get_secret('EMAIL_PASSWORD')}")
         env_content.append(f"DEFAULT_FROM_EMAIL={get_secret('EMAIL_USER')}")
 
-    # --- 2. Calculated Networking (The Logic moved from Bash) ---
+    # --- 2. Calculated Networking ---
     env_content.append(f"\n# --- Infrastructure & Traefik ---")
     
-    # Container Naming
     ctr_prefix = config.get("container_prefix", "app")
     if env_name == "staging":
         ctr_prefix += "_stage"
@@ -80,13 +80,11 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     # Domain Calculations
     main_domain = domains[0] if domains else "localhost"
     
-    # 1. DJANGO_ALLOWED_HOSTS (comma separated)
     env_content.append(f"DJANGO_ALLOWED_HOSTS={','.join(domains)}")
     
-    # 2. CSRF_TRUSTED_ORIGINS (needs https:// or http://)
     protocol = "https" if use_traefik else "http"
     csrf_urls = [f"{protocol}://{d}" for d in domains]
-    # Add local ports for dev if needed
+    
     if is_local:
         csrf_urls.append("http://localhost:3000")
         csrf_urls.append("http://127.0.0.1:3000")
@@ -94,14 +92,11 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     env_content.append(f"CSRF_TRUSTED_URLS={','.join(csrf_urls)}")
     env_content.append(f"PUBLIC_ORIGIN={protocol}://{main_domain}")
 
-    # 3. Traefik Rule
     if use_traefik:
-        # Generates: Host(`a.com`) || Host(`b.com`)
         rules = [f"Host(`{d}`)" for d in domains]
         traefik_rule = " || ".join(rules)
         env_content.append(f"TRAEFIK_ROUTER_RULE={traefik_rule}")
     else:
-        # Dummy value for local to prevent docker-compose variable errors
         env_content.append("TRAEFIK_ROUTER_RULE=Host(`localhost`)")
 
     # --- Write File ---

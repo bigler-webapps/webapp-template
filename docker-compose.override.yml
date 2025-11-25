@@ -1,18 +1,23 @@
+# docker-compose.override.yml
 services:
-  template_app:
+  template_app: # Make sure this matches the name in docker-compose.yml
     ports:
       - "8125:8000"
     volumes:
-    - ./backend:/app/backend
-    - ./backend/media:/app/backend/media
+      - ./backend:/app/backend
+      - ./backend/media:/app/backend/media
     environment:
-      - ENV_TYPE=development
+      - ENV_TYPE=local
 
   db:
     ports:
       - "5435:5432"
-    networks:
-      - app-network
 
+# -----------------------------------------------------------
+# OVERRIDE NETWORKS
+# -----------------------------------------------------------
 networks:
-  proxy: {}
+  proxy:
+    # This disables the 'external: true' setting from the base file
+    external: false
+    name: project_template_local_proxy
