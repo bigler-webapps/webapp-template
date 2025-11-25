@@ -118,17 +118,23 @@ jobs:
       - name: Build & restart containers
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.SSH_HOST_NEW }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
             
-            mkdir -p /srv/apps/project_template
-            cd /srv/apps/project_template
+            TARGET_DIR="/srv/apps/project_template"
+            mkdir -p "$TARGET_DIR"
+            cd "$TARGET_DIR"
             
+            # Bauen & Starten
             docker compose up -d --build --remove-orphans
 
-            # Migrationen
-            # Service Name aus docker-compose prüfen! (Ich nehme template_app an)
-            docker compose exec -T template_app python manage.py migrate --noinput
+            # WARTEN: Einfach und pragmatisch (10s reichen für PostgreSQL meist locker)
+            echo "⏳ Warte 10 Sekunden auf Datenbank..."
+            sleep 10
+
+            # DB-Migrationen
+            # Wichtig: Der Service-Name muss 'project_template_app' heissen (wie in Ihrer docker-compose.yml)
+            docker compose exec -T project_template_app python manage.py migrate --noinput
