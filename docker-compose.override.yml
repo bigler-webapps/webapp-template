@@ -9,6 +9,7 @@ services:
     environment:
       - ENV_TYPE=local
 
+
   db:
     ports:
       - "5435:5432"

@@ -7,8 +7,8 @@ from django.dispatch import receiver
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ("admin", "Admin"),
-        ("teacher", "Teacher"),
-        ("student", "Student"),
+        ("supervisor", "Supervisor"),
+        ("collaborator", "Collaborator"),
         ("none", "None"),
     ]
 

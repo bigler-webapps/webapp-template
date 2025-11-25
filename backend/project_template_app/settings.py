@@ -166,12 +166,26 @@ REST_FRAMEWORK = {
     ]
 }
 
-ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
-ACCOUNT_SIGNUP_FIELDS = ["email", "password1"]
+
+# 1. Database Model Config (Keep this)
+# This ensures the DB doesn't expect a username
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None 
+ACCOUNT_UNIQUE_EMAIL = True
+
+# 2. Login Method (Keep this)
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_EMAIL_VERIFICATION = "optional"
+
+# 3. Form Configuration (THE FIX)
+# - We remove 'username' from this list to satisfy "No Username".
+# - We add 'email*' with an asterisk to satisfy "Email Required".
+# - We include password fields explicitly as per the new warning recommendation.
+ACCOUNT_SIGNUP_FIELDS = [
+    "email*",
+    "password1*",
+    # "password2*", # Uncomment if you want "Confirm Password" field
+]
 
 HEADLESS_ONLY = True
 HEADLESS_CLIENTS = ["browser"]
