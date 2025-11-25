@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: django_backend_project_template
+    container_name: ${CONTAINER_NAME_PREFIX}_backend
     env_file:
       - .env
     depends_on:
@@ -16,11 +16,20 @@ services:
     networks:
       - app-network
       - proxy
+    
+    # Traefik Configuration
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${ROUTER_NAME}.rule=${TRAEFIK_ROUTER_RULE}"
+      - "traefik.http.routers.${ROUTER_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${ROUTER_NAME}.tls.certresolver=myresolver"
+      - "traefik.http.services.${ROUTER_NAME}.loadbalancer.server.port=8000"
+
     restart: unless-stopped
 
   db:
     image: postgis/postgis:14-3.1
-    container_name: postgis_db_template
+    container_name: ${CONTAINER_NAME_PREFIX}_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -33,7 +42,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: redis_server_template
+    container_name: ${CONTAINER_NAME_PREFIX}_redis
     restart: unless-stopped
     networks:
       - app-network
@@ -42,7 +51,13 @@ networks:
   app-network:
   proxy:
     external: true
+    name: traefik_proxy
 
 volumes:
+  # WICHTIG: Namen sind jetzt dynamisch basierend auf dem Prefix.
+  # Verhindert Konflikte, wenn mehrere Template-Instanzen auf demselben Server laufen.
   postgres_data:
+    name: ${CONTAINER_NAME_PREFIX}_postgres_data
+  
   media_volume:
+    name: ${CONTAINER_NAME_PREFIX}_media_volume

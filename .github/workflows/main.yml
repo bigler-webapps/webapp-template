@@ -35,10 +35,9 @@ jobs:
           ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}
 
           # --- Mail (Gmail SMTP via App Password) ---
-          EMAIL_HOST=smtp.gmail.com
-          EMAIL_PORT=587
-          EMAIL_USE_TLS=True
-          EMAIL_USE_SSL=False
+          EMAIL_HOST=${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT=${{ secrets.EMAIL_PORT }}
+          EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}
           EMAIL_USER=${{ secrets.EMAIL_USER }}
           EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
           DEFAULT_FROM_EMAIL=${{ secrets.EMAIL_USER }}
