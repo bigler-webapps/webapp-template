@@ -119,7 +119,7 @@ jobs:
             docker compose --env-file .env up -d --build --remove-orphans
 
             echo "⏳ Warte 10 Sekunden auf Datenbank-Start..."
-            sleep 10
+            sleep 60
 
             # DB-Migrationen
             # KORREKTUR: Service Name ist 'template_app' (nicht project_template_app)
