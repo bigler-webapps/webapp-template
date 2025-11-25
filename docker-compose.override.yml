@@ -1,5 +1,5 @@
 services:
-  project_template_app:
+  template_app:
     ports:
       - "8125:8000"
     volumes:

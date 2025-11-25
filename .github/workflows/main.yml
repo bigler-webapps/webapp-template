@@ -5,6 +5,15 @@ on:
     tags:
       - 'deploy-project_template_app-*'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target Environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
 
 jobs:
   deploy:
@@ -13,74 +22,54 @@ jobs:
       - uses: actions/checkout@v4
 
       # ---------------------------------------------------------
-      # SCHRITT 1: Konfiguration & .env generieren
+      # SCHRITT 0: Define Environment & Paths
       # ---------------------------------------------------------
-      - name: Generate Configuration and .env
+      - name: Determine Target Environment
+        id: env-selector
         run: |
-          # 1. KONFIGURATION AUS SECRETS LADEN
-          APP_DOMAINS="${{ secrets.APP_DOMAINS }}" 
-          APP_NAME="${{ secrets.ROUTER_NAME }}"
-          CTR_PREFIX="${{ secrets.CONTAINER_NAME_PREFIX }}"
+          # 1. Determine Environment (Manual Input vs Tag)
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TARGET_ENV="${{ github.event.inputs.environment }}"
+          else
+            TARGET_ENV="production"
+          fi
           
-          # Validierung
-          if [ -z "$APP_DOMAINS" ]; then echo "❌ ERROR: Secret APP_DOMAINS is empty"; exit 1; fi
-          if [ -z "$APP_NAME" ]; then echo "❌ ERROR: Secret ROUTER_NAME is empty"; exit 1; fi
-          if [ -z "$CTR_PREFIX" ]; then echo "❌ ERROR: Secret CONTAINER_NAME_PREFIX is empty"; exit 1; fi
+          echo "Selected Environment: $TARGET_ENV"
+          echo "TARGET_ENV=$TARGET_ENV" >> $GITHUB_ENV
 
-          # 2. AUTO-CALC (Traefik Rules & Hosts)
-          DJANGO_HOSTS_CSV=$(echo "$APP_DOMAINS" | tr ' ' ',')
-          
-          CSRF_URLS=""
-          for d in $APP_DOMAINS; do
-            if [ -z "$CSRF_URLS" ]; then CSRF_URLS="https://$d"; else CSRF_URLS="$CSRF_URLS,https://$d"; fi
-          done
-          
-          TRAEFIK_RULE=""
-          for d in $APP_DOMAINS; do
-            PART="Host(\`$d\`)"
-            if [ -z "$TRAEFIK_RULE" ]; then TRAEFIK_RULE="$PART"; else TRAEFIK_RULE="$TRAEFIK_RULE || $PART"; fi
-          done
-          
-          MAIN_DOMAIN=$(echo "$APP_DOMAINS" | awk '{print $1}')
+          # 2. Determine Server Path based on Environment
+          if [ "$TARGET_ENV" == "staging" ]; then
+            echo "REMOTE_PATH=/srv/apps/project_template_stage" >> $GITHUB_ENV
+          else
+            echo "REMOTE_PATH=/srv/apps/project_template" >> $GITHUB_ENV
+          fi
 
-          # 3. .ENV SCHREIBEN
-          cat <<EOF > .env
-          # --- DB ---
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_PORT=${{ secrets.DB_PORT }}
+      # ---------------------------------------------------------
+      # SCHRITT 1: Generate .env via Python
+      # ---------------------------------------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-          # --- Django / App ---
-          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-          ENV_TYPE=production
-          DEBUG=False
-          
-          # --- Traefik & Docker Config (Aus Secrets!) ---
-          CONTAINER_NAME_PREFIX=${CTR_PREFIX}
-          ROUTER_NAME=${APP_NAME}
-          
-          # Generierte Werte
-          DOMAIN_URL=${MAIN_DOMAIN}
-          DJANGO_ALLOWED_HOSTS=${DJANGO_HOSTS_CSV},localhost,127.0.0.1
-          CSRF_TRUSTED_ORIGINS=${CSRF_URLS}
-          TRAEFIK_ROUTER_RULE=${TRAEFIK_RULE}
-          PUBLIC_ORIGIN=https://${MAIN_DOMAIN}
+      - name: Install dependencies
+        run: pip install PyYAML
 
-          # --- Mail ---
-          EMAIL_HOST=${{ secrets.EMAIL_HOST }}
-          EMAIL_PORT=${{ secrets.EMAIL_PORT }}
-          EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}
-          EMAIL_USER=${{ secrets.EMAIL_USER }}
-          EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
-          DEFAULT_FROM_EMAIL=${{ secrets.EMAIL_USER }}
-
-          # Optional
-          ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}
-          
-          IMAGE_TAG=latest
-          EOF
+      - name: Generate .env
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        run: |
+          python scripts/generate_env.py --env ${{ env.TARGET_ENV }}
 
       # ---------------------------------------------------------
       # SCHRITT 2: Rsync
@@ -91,12 +80,14 @@ jobs:
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: ${{ secrets.SSH_USER }}
           remote_key:  ${{ secrets.SSH_PRIVATE_KEY }}
-          switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml' --exclude '.git' --exclude 'frontend/node_modules'
+          # Excludes remain the same
+          switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml' --exclude '.git' --exclude 'frontend/node_modules' --exclude '__pycache__'
           path: "./"
-          remote_path: "/srv/apps/project_template"
+          # Uses the dynamic path defined in Step 0
+          remote_path: ${{ env.REMOTE_PATH }}
 
       # ---------------------------------------------------------
-      # SCHRITT 3: Docker Start & Migrate
+      # SCHRITT 3: Docker Start
       # ---------------------------------------------------------
       - name: Build & restart containers
         uses: appleboy/ssh-action@v0.1.10
@@ -107,21 +98,24 @@ jobs:
           script: |
             set -euo pipefail
             
-            TARGET_DIR="/srv/apps/project_template"
-            mkdir -p "$TARGET_DIR"
-            cd "$TARGET_DIR"
+            # Use dynamic path
+            cd ${{ env.REMOTE_PATH }}
             
-            # Debug: .env prüfen
-            if [ ! -f .env ]; then echo "❌ .env fehlt!"; exit 1; fi
+            # Ensure .env exists
+            if [ ! -f .env ]; then echo "❌ .env missing"; exit 1; fi
             
-            # Bauen & Starten
-            # Wir nutzen explizit --env-file, um sicherzugehen, dass die Variablen geladen werden
+            # Build and Start
             docker compose --env-file .env up -d --build --remove-orphans
-
-            echo "⏳ Warte 10 Sekunden auf Datenbank-Start..."
+            
+            echo "⏳ Waiting for DB..."
             sleep 5
-
-            # DB-Migrationen
-            # KORREKTUR: Service Name ist 'template_app' (nicht project_template_app)
-            echo "🚀 Starte Migration..."
-            docker compose exec -T template_app python manage.py migrate --noinput
+            
+            # Dynamic Container Selection for Migration
+            # We read the prefix from the generated .env file to know the container name
+            # Format in .env is CONTAINER_NAME_PREFIX=template_stage (for example)
+            
+            PREFIX=$(grep "^CONTAINER_NAME_PREFIX=" .env | cut -d '=' -f2)
+            CTR_NAME="${PREFIX}_app"
+            
+            echo "🚀 Starting migration on container: $CTR_NAME"
+            docker compose exec -T "$CTR_NAME" python manage.py migrate --noinput

@@ -1,0 +1,28 @@
+project_name: "project_template"
+container_prefix: "template" # Used for Docker container names (e.g., template_backend)
+
+environments:
+  production:
+    domains:
+      - "template.bigler-consult.ch"
+    # Defines if this environment runs with HTTPS/Traefik
+    use_traefik: true 
+  
+  staging:
+    domains:
+      - "template.sys.bigler-consult.ch"
+    use_traefik: true
+
+  local:
+    domains:
+      - "localhost"
+      - "127.0.0.1"
+    use_traefik: false
+    # Local defaults to avoid needing a secrets file for dev
+    defaults:
+      DB_USER: "qrqueue"
+      DB_PASSWORD: "qrqueue"
+      DB_NAME: "db_template"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DEBUG: "True"

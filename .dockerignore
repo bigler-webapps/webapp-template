@@ -17,4 +17,3 @@ backend/.venv
 .git
 .gitignore
 *.log
-.env
