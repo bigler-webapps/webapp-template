@@ -13,94 +13,78 @@ jobs:
       - uses: actions/checkout@v4
 
       # ---------------------------------------------------------
-      # SCHRITT 1: Konfiguration & .env generieren (Zentralisiert)
+      # SCHRITT 1: Konfiguration & .env generieren
       # ---------------------------------------------------------
       - name: Generate Configuration and .env
         run: |
-          # =======================================================
-          # 1. ZENTRALE KONFIGURATION (Hier Domains anpassen!)
-          # =======================================================
-          # Einfach alle Domains durch Leerzeichen getrennt auflisten.
-          # Die erste Domain wird oft als Hauptdomain betrachtet.
-          APP_DOMAINS="bigler-consult.ch www.bigler-consult.ch"
+          # 1. KONFIGURATION AUS SECRETS LADEN
+          APP_DOMAINS="${{ secrets.APP_DOMAINS }}" 
+          APP_NAME="${{ secrets.ROUTER_NAME }}"
+          CTR_PREFIX="${{ secrets.CONTAINER_NAME_PREFIX }}"
           
-          # Name des Routers/Containers (muss unique sein auf dem Server)
-          APP_NAME="bigler-consult-prod"
-          CTR_PREFIX="bigler_consult_prod"
-          
-          # =======================================================
-          # 2. AUTOMATISCHE BERECHNUNG (Nicht anfassen)
-          # =======================================================
-          
-          # A) Django ALLOWED_HOSTS (Komma-getrennt)
-          # Wandelt "a b c" in "a,b,c" um
+          # Validierung
+          if [ -z "$APP_DOMAINS" ]; then echo "❌ ERROR: Secret APP_DOMAINS is empty"; exit 1; fi
+          if [ -z "$APP_NAME" ]; then echo "❌ ERROR: Secret ROUTER_NAME is empty"; exit 1; fi
+          if [ -z "$CTR_PREFIX" ]; then echo "❌ ERROR: Secret CONTAINER_NAME_PREFIX is empty"; exit 1; fi
+
+          # 2. AUTO-CALC (Traefik Rules & Hosts)
           DJANGO_HOSTS_CSV=$(echo "$APP_DOMAINS" | tr ' ' ',')
           
-          # B) CSRF/CORS URLs (Mit https:// Prefix)
-          # Wandelt "a b" in "https://a,https://b" um
           CSRF_URLS=""
           for d in $APP_DOMAINS; do
             if [ -z "$CSRF_URLS" ]; then CSRF_URLS="https://$d"; else CSRF_URLS="$CSRF_URLS,https://$d"; fi
           done
           
-          # C) Traefik Router Rule
-          # Baut den String: Host(`a`) || Host(`b`) ...
-          # Wir nutzen Backticks (\`) für Traefik, die wir in Bash escapen müssen.
           TRAEFIK_RULE=""
           for d in $APP_DOMAINS; do
             PART="Host(\`$d\`)"
             if [ -z "$TRAEFIK_RULE" ]; then TRAEFIK_RULE="$PART"; else TRAEFIK_RULE="$TRAEFIK_RULE || $PART"; fi
           done
           
-          # Erste Domain als Hauptdomain für Zertifikat (optional)
           MAIN_DOMAIN=$(echo "$APP_DOMAINS" | awk '{print $1}')
 
-          echo "---------------------------------------------"
-          echo "Config Generated:"
-          echo "Domains: $APP_DOMAINS"
-          echo "Traefik Rule: $TRAEFIK_RULE"
-          echo "---------------------------------------------"
-
-          # =======================================================
-          # 3. .ENV DATEI SCHREIBEN
-          # =======================================================
+          # 3. .ENV SCHREIBEN
           cat <<EOF > .env
-          # --- Secrets ---
+          # --- DB ---
           DB_USER=${{ secrets.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           DB_NAME=${{ secrets.DB_NAME }}
           DB_HOST=${{ secrets.DB_HOST }}
           DB_PORT=${{ secrets.DB_PORT }}
-          
+
+          # --- Django / App ---
           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-          
-          # --- Mail ---
-          EMAIL_HOST=${{ secrets.MAIL_HOST }}
-          EMAIL_PORT=${{ secrets.MAIL_PORT }}
-          EMAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }}
-          EMAIL_USER=${{ secrets.MAIL_USERNAME }}
-          EMAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-          
-          
-          # --- Infrastructure Auto-Config ---
           ENV_TYPE=production
           DEBUG=False
-          ALLOWED_HOSTS=queue.kerzenziehen.ch,localhost,127.0.0.1
-          CSRF_TRUSTED_ORIGINS=https://queue.kerzenziehen.ch
-          PUBLIC_ORIGIN=https://queue.kerzenziehen.ch
+          
+          # --- Traefik & Docker Config (Aus Secrets!) ---
+          CONTAINER_NAME_PREFIX=${CTR_PREFIX}
+          ROUTER_NAME=${APP_NAME}
+          
+          # Generierte Werte
+          DOMAIN_URL=${MAIN_DOMAIN}
+          DJANGO_ALLOWED_HOSTS=${DJANGO_HOSTS_CSV},localhost,127.0.0.1
+          CSRF_TRUSTED_ORIGINS=${CSRF_URLS}
+          TRAEFIK_ROUTER_RULE=${TRAEFIK_RULE}
+          PUBLIC_ORIGIN=https://${MAIN_DOMAIN}
 
-          CONTAINER_NAME_PREFIX=${{ secrets.CONTAINER_NAME_PREFIX }}
-
-
-          # --- Mail (Gmail SMTP via App Password) ---
+          # --- Mail ---
           EMAIL_HOST=${{ secrets.EMAIL_HOST }}
           EMAIL_PORT=${{ secrets.EMAIL_PORT }}
           EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}
           EMAIL_USER=${{ secrets.EMAIL_USER }}
           EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
           DEFAULT_FROM_EMAIL=${{ secrets.EMAIL_USER }}
+
+          # Optional
+          ADMIN_TOKEN=${{ secrets.ADMIN_TOKEN }}
+          
+          IMAGE_TAG=latest
           EOF
 
+      # ---------------------------------------------------------
+      # SCHRITT 2: Rsync
+      # ---------------------------------------------------------
       - name: Rsync project to server
         uses: burnett01/rsync-deployments@7.0.2
         with:
@@ -109,11 +93,10 @@ jobs:
           remote_key:  ${{ secrets.SSH_PRIVATE_KEY }}
           switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml' --exclude '.git' --exclude 'frontend/node_modules'
           path: "./"
-          # Standardisierter Pfad
           remote_path: "/srv/apps/project_template"
 
       # ---------------------------------------------------------
-      # SCHRITT 3: Docker Start
+      # SCHRITT 3: Docker Start & Migrate
       # ---------------------------------------------------------
       - name: Build & restart containers
         uses: appleboy/ssh-action@v0.1.10
@@ -128,13 +111,17 @@ jobs:
             mkdir -p "$TARGET_DIR"
             cd "$TARGET_DIR"
             
+            # Debug: .env prüfen
+            if [ ! -f .env ]; then echo "❌ .env fehlt!"; exit 1; fi
+            
             # Bauen & Starten
-            docker compose up -d --build --remove-orphans
+            # Wir nutzen explizit --env-file, um sicherzugehen, dass die Variablen geladen werden
+            docker compose --env-file .env up -d --build --remove-orphans
 
-            # WARTEN: Einfach und pragmatisch (10s reichen für PostgreSQL meist locker)
-            echo "⏳ Warte 10 Sekunden auf Datenbank..."
+            echo "⏳ Warte 10 Sekunden auf Datenbank-Start..."
             sleep 10
 
             # DB-Migrationen
-            # Wichtig: Der Service-Name muss 'project_template_app' heissen (wie in Ihrer docker-compose.yml)
-            docker compose exec -T project_template_app python manage.py migrate --noinput
+            # KORREKTUR: Service Name ist 'template_app' (nicht project_template_app)
+            echo "🚀 Starte Migration..."
+            docker compose exec -T template_app python manage.py migrate --noinput
