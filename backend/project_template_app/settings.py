@@ -89,8 +89,10 @@ DATABASES = {
 # Email
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    FRONTEND_BASE_URL = "http://localhost:8125"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    FRONTEND_BASE_URL = "https://project_template.example.com"
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
@@ -105,7 +107,7 @@ ACCOUNT_LOGIN_METHODS = {"email"}   # nur E-Mail-Login
 # Welche Felder beim Signup vorhanden sind (und ob sie Pflicht sind, * = required)
 ACCOUNT_SIGNUP_FIELDS = [
     "email*",
-    "password*",
+    "password1*",
 ]
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
@@ -131,9 +133,20 @@ AUTHENTICATION_BACKENDS = [
 ]
 HEADLESS_ONLY = True  # keine klassischen allauth-HTML-Views, nur API
 HEADLESS_FRONTEND_URLS = {
-    # Links in Mails, z.B. Confirm / Reset, zeigen auf dein React-Frontend
-    "account_confirm_email": "https://project_template.example.com/email-verify/{key}",
-    "account_reset_password_from_key": "https://project_template.example.com/password-reset/{key}",
+    # Email confirmation
+    "account_confirm_email": f"{FRONTEND_BASE_URL}/email-verify/{{key}}",
+
+    # Password reset start page (optional but useful if you ever link to it)
+    "account_reset_password": f"{FRONTEND_BASE_URL}/reset-request-password",
+
+    # Password reset confirm page
+    "account_reset_password_from_key": f"{FRONTEND_BASE_URL}/password-reset/{{key}}",
+
+    # Signup page (optional but recommended)
+    "account_signup": f"{FRONTEND_BASE_URL}/signup",
+
+    # Where to send the user if the social login handshake fails
+    "socialaccount_login_error": f"{FRONTEND_BASE_URL}/login?social=error",
 }
 HEADLESS_CLIENTS = ["browser"]
 
@@ -154,6 +167,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
 
     "corsheaders",
     "rest_framework",
@@ -166,7 +180,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.mfa",
     "allauth.headless",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.microsoft",
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

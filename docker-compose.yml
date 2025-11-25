@@ -1,5 +1,5 @@
 services:
-  project_template_app:
+  template_app:
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -11,8 +11,11 @@ services:
       - redis
     environment:
       - REDIS_HOST=redis
+    
     volumes:
+      # Standardisiertes Named Volume
       - media_volume:/app/backend/media
+    
     networks:
       - app-network
       - proxy

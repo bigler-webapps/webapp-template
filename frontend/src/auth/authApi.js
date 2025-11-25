@@ -1,8 +1,5 @@
-// src/auth/authApi.js
 import axios from 'axios';
 import { HEADLESS_BASE, USERS_BASE } from './authConfig'; 
-
-
 
 // Helper to normalise error messages from API responses
 function extractErrorMessage(error) {
@@ -19,9 +16,15 @@ function extractErrorMessage(error) {
   return JSON.stringify(data);
 }
 
+// Helper to get CSRF token from cookies manually
+function getCsrfToken() {
+  if (!document.cookie) return null;
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : null;
+}
+
 /**
  * Fetches the current authenticated user from your own User API.
- * Expected to return the same shape as before (/api/users/current/).
  */
 export async function fetchCurrentUser() {
   const res = await axios.get(`${USERS_BASE}/current/`, {
@@ -31,38 +34,42 @@ export async function fetchCurrentUser() {
 }
 
 /**
+ * Updates the user profile fields.
+ */
+export async function updateUserProfile(data) {
+  const res = await axios.patch(`${USERS_BASE}/current/`, data, {
+    withCredentials: true,
+  });
+  return res.data;
+}
+
+/**
  * Logs a user in using email/password via allauth headless.
- * Afterwards fetches current user from /api/users/current/.
  */
 export async function loginWithPassword(email, password) {
   try {
-    // 1) Log in via allauth headless
     await axios.post(
       `${HEADLESS_BASE}/auth/login`,
       {
-        email, // Using 'email' key as configured in backend
+        email, 
         password,
       },
       { withCredentials: true },
     );
   } catch (error) {
-    // FIX: If the server returns 409, it means the session is already authenticated.
-    // We swallow this error and proceed to fetch the user details.
     if (error.response && error.response.status === 409) {
-       // Proceed normally
+       // Proceed normally if already logged in
     } else {
       throw new Error(extractErrorMessage(error));
     }
   }
 
-  // 2) Fetch current user from your own API
   const user = await fetchCurrentUser();
   return user;
 }
 
 /**
  * Requests a password reset email via allauth headless.
- * Some setups accept "email", andere "login".
  */
 export async function requestPasswordReset(email) {
   try {
@@ -78,7 +85,6 @@ export async function requestPasswordReset(email) {
 
 /**
  * Sets a new password using a reset key (from email link).
- * Typically used on "PasswordSet"/"PasswordReset" page.
  */
 export async function resetPasswordWithKey(key, newPassword) {
   try {
@@ -97,16 +103,14 @@ export async function resetPasswordWithKey(key, newPassword) {
 
 /**
  * Changes the password for an authenticated user.
- * oldPassword may be optional depending on your policy.
  */
-export async function changePassword(oldPassword, newPassword) {
+export async function changePassword(currentPassword, newPassword) {
   try {
     await axios.post(
       `${HEADLESS_BASE}/account/password/change`,
       {
-        old_password: oldPassword,
-        new_password1: newPassword,
-        new_password2: newPassword,
+        current_password: currentPassword,
+        new_password: newPassword,
       },
       { withCredentials: true },
     );
@@ -117,18 +121,26 @@ export async function changePassword(oldPassword, newPassword) {
 
 /**
  * Logs the user out via allauth headless.
- * Optionally, you can also call your legacy /api/users/logout/ if needed.
  */
 export async function logoutSession() {
   try {
-    await axios.post(
-      `${HEADLESS_BASE}/auth/logout`,
-      {},
-      { withCredentials: true },
+    const headers = {};
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken;
+    }
+
+    await axios.delete(
+      `${HEADLESS_BASE}/auth/session`,
+      { 
+        withCredentials: true,
+        headers, 
+      },
     );
   } catch (error) {
-    // Logout-Fehler sind selten kritisch, daher hier nur loggen
-    // und nicht weiterwerfen.
+    if (error.response && [401, 404, 410].includes(error.response.status)) {
+      return;
+    }
     // eslint-disable-next-line no-console
     console.error('Logout error:', error);
   }
@@ -137,14 +149,36 @@ export async function logoutSession() {
 /**
  * Starts an OAuth social login flow for the given provider.
  * Provider examples: "google", "microsoft".
+ * * FIX:
+ * 1. Uses POST instead of GET (standard for headless init flows).
+ * 2. Uses the correct path '/providers/{provider}/login'.
  */
 export function startSocialLogin(provider) {
-  window.location.href = `${HEADLESS_BASE}/social/login/${provider}/`;
+  const form = document.createElement('form');
+  form.style.display = 'none';
+  form.method = 'POST';
+  form.action = `${HEADLESS_BASE}/auth/provider/redirect`;
+
+  const data = {
+    provider,                                // "google"
+    process: 'login',
+    callback_url: window.location.origin,    // http://localhost:8125
+    csrfmiddlewaretoken: getCsrfToken() || '',
+  };
+
+  Object.entries(data).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
 }
 
 /**
  * Loads the current session information directly from allauth headless.
- * Can be useful in a dedicated AuthCallback page.
  */
 export async function fetchHeadlessSession() {
   const res = await axios.get(`${HEADLESS_BASE}/auth/session`, {
@@ -153,27 +187,17 @@ export async function fetchHeadlessSession() {
   return res.data;
 }
 
-/**
- * Placeholder for future Passkey (WebAuthn) login.
- * Here you will combine navigator.credentials.get(...) with a
- * headless WebAuthn endpoint when available.
- */
 export async function loginWithPasskey() {
-  // TODO: wire this up once WebAuthn endpoints are fully defined.
   throw new Error('Passkey login is not implemented yet.');
 }
 
-/**
- * Placeholder for future Passkey registration.
- * Used in Security/Account settings to add a new Passkey.
- */
 export async function registerPasskey() {
-  // TODO: implement WebAuthn registration flow.
   throw new Error('Passkey registration is not implemented yet.');
 }
 
 export const authApi = {
   fetchCurrentUser,
+  updateUserProfile,
   loginWithPassword,
   requestPasswordReset,
   resetPasswordWithKey,
