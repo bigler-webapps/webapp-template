@@ -22,30 +22,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # ---------------------------------------------------------
-      # SCHRITT 0: Define Environment & Paths
-      # ---------------------------------------------------------
-      - name: Determine Target Environment
-        id: env-selector
-        run: |
-          # 1. Determine Environment (Manual Input vs Tag)
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            TARGET_ENV="${{ github.event.inputs.environment }}"
-          else
-            TARGET_ENV="production"
-          fi
-          
-          echo "Selected Environment: $TARGET_ENV"
-          echo "TARGET_ENV=$TARGET_ENV" >> $GITHUB_ENV
-
-          # 2. Determine Server Path based on Environment
-          if [ "$TARGET_ENV" == "staging" ]; then
-            echo "REMOTE_PATH=/srv/apps/project_template_stage" >> $GITHUB_ENV
-          else
-            echo "REMOTE_PATH=/srv/apps/project_template" >> $GITHUB_ENV
-          fi
-
-      # ---------------------------------------------------------
-      # SCHRITT 1: Generate .env via Python
+      # SETUP: Install Python & Tools
       # ---------------------------------------------------------
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -55,8 +32,50 @@ jobs:
       - name: Install dependencies
         run: pip install PyYAML
 
+      # ---------------------------------------------------------
+      # STEP 1: Determine Environment & Dynamic Path
+      # ---------------------------------------------------------
+      - name: Calculate Configuration
+        run: |
+          python3 -c "
+          import os, yaml
+
+          # 1. Determine Target Environment
+          event_name = '${{ github.event_name }}'
+          input_env = '${{ github.event.inputs.environment }}'
+          
+          if event_name == 'workflow_dispatch':
+              target_env = input_env
+          else:
+              target_env = 'production'
+
+          # 2. Read project.yaml
+          with open('project.yaml') as f:
+              config = yaml.safe_load(f)
+          
+          project_name = config['project_name']
+
+          # 3. Calculate Remote Path
+          # Logic: /srv/apps/queue (prod) OR /srv/apps/queue_stage (stage)
+          suffix = '_stage' if target_env == 'staging' else ''
+          remote_path = f'/srv/apps/{project_name}{suffix}'
+
+          print(f'✅ Environment: {target_env}')
+          print(f'✅ Project:     {project_name}')
+          print(f'✅ Remote Path: {remote_path}')
+
+          # 4. Write to GitHub Env for next steps
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write(f'TARGET_ENV={target_env}\n')
+              f.write(f'REMOTE_PATH={remote_path}\n')
+          "
+
+      # ---------------------------------------------------------
+      # STEP 2: Generate .env (Using the ENV we just set)
+      # ---------------------------------------------------------
       - name: Generate .env
         env:
+          # ALL Secrets must be passed explicitly here
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -72,7 +91,7 @@ jobs:
           python scripts/generate_env.py --env ${{ env.TARGET_ENV }}
 
       # ---------------------------------------------------------
-      # SCHRITT 2: Rsync
+      # STEP 3: Rsync to Server
       # ---------------------------------------------------------
       - name: Rsync project to server
         uses: burnett01/rsync-deployments@7.0.2
@@ -80,14 +99,12 @@ jobs:
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: ${{ secrets.SSH_USER }}
           remote_key:  ${{ secrets.SSH_PRIVATE_KEY }}
-          # Excludes remain the same
           switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml' --exclude '.git' --exclude 'frontend/node_modules' --exclude '__pycache__'
           path: "./"
-          # Uses the dynamic path defined in Step 0
           remote_path: ${{ env.REMOTE_PATH }}
-
+          
       # ---------------------------------------------------------
-      # SCHRITT 3: Docker Start
+      # STEP 4: Docker Start & Migrate
       # ---------------------------------------------------------
       - name: Build & restart containers
         uses: appleboy/ssh-action@v0.1.10
@@ -98,10 +115,10 @@ jobs:
           script: |
             set -euo pipefail
             
-            # Use dynamic path
+            # Go to the dynamic path calculated in Step 1
             cd ${{ env.REMOTE_PATH }}
             
-            # Ensure .env exists
+            # Safety check
             if [ ! -f .env ]; then echo "❌ .env missing"; exit 1; fi
             
             # Build and Start
@@ -112,10 +129,8 @@ jobs:
             
             # Dynamic Container Selection for Migration
             # We read the prefix from the generated .env file to know the container name
-            # Format in .env is CONTAINER_NAME_PREFIX=template_stage (for example)
-            
             PREFIX=$(grep "^CONTAINER_NAME_PREFIX=" .env | cut -d '=' -f2)
-            CTR_NAME="${PREFIX}_app"
+            CTR_NAME="${PREFIX}_backend"
             
             echo "🚀 Starting migration on container: $CTR_NAME"
             docker compose exec -T "$CTR_NAME" python manage.py migrate --noinput
