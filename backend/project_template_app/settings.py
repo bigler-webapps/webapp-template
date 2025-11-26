@@ -76,9 +76,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "project_template_app.urls"
-WSGI_APPLICATION = "project_template_app.wsgi.application"
-ASGI_APPLICATION = "project_template_app.asgi.application"
+ROOT_MODULE = env("DJANGO_ROOT_MODULE", default="project_template_app")
+
+ROOT_URLCONF = f"{ROOT_MODULE}.urls"
+WSGI_APPLICATION = f"{ROOT_MODULE}.wsgi.application"
+ASGI_APPLICATION = f"{ROOT_MODULE}.asgi.application"
 SITE_ID = 1
 
 # 5. Database
@@ -224,6 +226,10 @@ LOGGING = {
     },
     "loggers": {
         "django": {"handlers": ["console"], "level": "INFO"},
-        "project_template_app": {"handlers": ["console"], "level": "DEBUG" if DEBUG else "INFO"},
+        # Use the dynamic variable here as the key!
+        ROOT_MODULE: {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO"
+        },
     },
 }

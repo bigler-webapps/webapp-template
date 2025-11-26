@@ -79,7 +79,6 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
         # 3. Base Identifiers
         env_content.append(f"CONTAINER_NAME_PREFIX={config.get('container_prefix', 'infra')}")
         
-        # Write and Exit
         write_env_file(output_path, env_content)
         return
 
@@ -125,6 +124,11 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
         env_content.append(f"EMAIL_PASSWORD={get_secret('EMAIL_PASSWORD')}")
         env_content.append(f"DEFAULT_FROM_EMAIL={get_secret('EMAIL_USER')}")
 
+    # --- App Specific Secrets (JG Ferien) ---
+    ex_key = get_secret("EXCHANGERATE_HOST_KEY", required=False)
+    if ex_key:
+        env_content.append(f"EXCHANGERATE_HOST_KEY={ex_key}")
+
     # --- Infrastructure ---
     env_content.append(f"\n# --- Infrastructure & Traefik ---")
     ctr_prefix = config.get("container_prefix", "app")
@@ -150,6 +154,11 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
         env_content.append(f"TRAEFIK_ROUTER_RULE={' || '.join(rules)}")
     else:
         env_content.append("TRAEFIK_ROUTER_RULE=Host(`localhost`)")
+
+    # --- Dynamic Django Module ---
+    # Defaults to 'project_template_app' if missing to be safe for the template itself
+    root_mod = config.get("root_module", "project_template_app")
+    env_content.append(f"DJANGO_ROOT_MODULE={root_mod}")
 
     write_env_file(output_path, env_content)
 
