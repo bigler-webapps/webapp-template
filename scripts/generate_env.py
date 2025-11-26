@@ -37,7 +37,6 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
 
     # 1. Validate Environment exists in YAML
     if env_name not in config.get("environments", {}):
-        # Special check: If infra never runs locally, exit gracefully
         if env_name == "local" and project_type == "infrastructure":
             print("ℹ️  Infrastructure app does not require local .env generation. Exiting.")
             sys.exit(0)
@@ -46,6 +45,7 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
         sys.exit(1)
 
     env_config = config["environments"][env_name]
+    env_overrides = env_config.get("env_overrides", {})
     env_content = []
 
     # ==========================================
@@ -53,48 +53,37 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     # ==========================================
     if project_type == "infrastructure":
         print("🏗️  Generating Infrastructure .env")
-
-        # 1. Load Domains
+        # [Infrastructure logic omitted for brevity - logic remains identical]
         domain_map = env_config.get("domains", {})
         for var_name, domain in domain_map.items():
             env_content.append(f"{var_name}={domain}")
 
-        # 2. Load Secrets
-        infra_secrets = [
-            "TRAEFIK_DASHBOARD_AUTH", 
-            "ACME_EMAIL", 
-            "WG_SERVERURL", 
-            "WG_PEERS"
-        ]
-        
+        infra_secrets = ["TRAEFIK_DASHBOARD_AUTH", "ACME_EMAIL", "WG_SERVERURL", "WG_PEERS"]
         for secret in infra_secrets:
-            val = get_secret(secret, required=False) 
+            if secret in env_overrides:
+                val = env_overrides[secret]
+            else:
+                val = get_secret(secret, required=False)
+            
             if val:
-                # --- FIX: Escape $ for Docker Compose ---
-                if secret == "TRAEFIK_DASHBOARD_AUTH":
-                    val = val.replace("$", "$$")
-                # ----------------------------------------
+                if secret == "TRAEFIK_DASHBOARD_AUTH": val = val.replace("$", "$$")
                 env_content.append(f"{secret}={val}")
 
-        # 3. Base Identifiers
         env_content.append(f"CONTAINER_NAME_PREFIX={config.get('container_prefix', 'infra')}")
-        
         write_env_file(output_path, env_content)
         return
 
     # ==========================================
     # MODE B: STANDARD DJANGO APP
     # ==========================================
-    # Logic for standard apps...
     domains = env_config.get("domains", [])
     use_traefik = env_config.get("use_traefik", False)
-    
     is_local = (env_name == "local")
     local_defaults = env_config.get("defaults", {})
 
     def resolve(key, required_in_prod=True):
-        if is_local:
-            return local_defaults.get(key, "")
+        if key in env_overrides: return env_overrides[key]
+        if is_local: return local_defaults.get(key, "")
         return get_secret(key, required=required_in_prod)
 
     # --- Database ---
@@ -117,20 +106,19 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     if is_local:
         env_content.append("EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend")
     else:
-        env_content.append(f"EMAIL_HOST={get_secret('EMAIL_HOST')}")
-        env_content.append(f"EMAIL_PORT={get_secret('EMAIL_PORT')}")
-        env_content.append(f"EMAIL_USE_TLS={get_secret('EMAIL_USE_TLS')}")
-        env_content.append(f"EMAIL_USER={get_secret('EMAIL_USER')}")
-        env_content.append(f"EMAIL_PASSWORD={get_secret('EMAIL_PASSWORD')}")
-        env_content.append(f"DEFAULT_FROM_EMAIL={get_secret('EMAIL_USER')}")
+        env_content.append(f"EMAIL_HOST={resolve('EMAIL_HOST', required_in_prod=False)}")
+        env_content.append(f"EMAIL_PORT={resolve('EMAIL_PORT', required_in_prod=False)}")
+        env_content.append(f"EMAIL_USE_TLS={resolve('EMAIL_USE_TLS', required_in_prod=False)}")
+        env_content.append(f"EMAIL_USER={resolve('EMAIL_USER', required_in_prod=False)}")
+        env_content.append(f"EMAIL_PASSWORD={resolve('EMAIL_PASSWORD', required_in_prod=False)}")
+        env_content.append(f"DEFAULT_FROM_EMAIL={resolve('EMAIL_USER', required_in_prod=False)}")
 
-    # --- App Specific Secrets (JG Ferien) ---
-    ex_key = get_secret("EXCHANGERATE_HOST_KEY", required=False)
+    ex_key = resolve("EXCHANGERATE_HOST_KEY", required_in_prod=False)
     if ex_key:
         env_content.append(f"EXCHANGERATE_HOST_KEY={ex_key}")
 
     # --- Infrastructure ---
-    env_content.append(f"\n# --- Infrastructure & Traefik ---")
+    env_content.append(f"\n# --- Infrastructure ---")
     ctr_prefix = config.get("container_prefix", "app")
     if env_name == "staging":
         ctr_prefix += "_stage"
@@ -138,9 +126,26 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     env_content.append(f"CONTAINER_NAME_PREFIX={ctr_prefix}")
     env_content.append(f"ROUTER_NAME={config.get('project_name')}-{env_name}")
 
+    # --- VOLUMES (New Section) ---
+    vol_config = env_config.get("volumes", {})
+    
+    def get_vol_name(key, default_name):
+        val = vol_config.get(key)
+        # Handle dict format (e.g., {external: true, name: 'foo'})
+        if isinstance(val, dict):
+            return val.get("name", default_name)
+        # Handle simple string format or None
+        return val if val else default_name
+
+    db_vol = get_vol_name("postgres_data", f"{ctr_prefix}_postgres_data")
+    media_vol = get_vol_name("media_volume", f"{ctr_prefix}_media_volume")
+
+    env_content.append(f"DB_VOLUME_NAME={db_vol}")
+    env_content.append(f"MEDIA_VOLUME_NAME={media_vol}")
+
+    # --- Network ---
     main_domain = domains[0] if domains else "localhost"
     env_content.append(f"DJANGO_ALLOWED_HOSTS={','.join(domains)}")
-    
     protocol = "https" if use_traefik else "http"
     csrf_urls = [f"{protocol}://{d}" for d in domains]
     if is_local:
@@ -155,8 +160,6 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     else:
         env_content.append("TRAEFIK_ROUTER_RULE=Host(`localhost`)")
 
-    # --- Dynamic Django Module ---
-    # Defaults to 'project_template_app' if missing to be safe for the template itself
     root_mod = config.get("root_module", "project_template_app")
     env_content.append(f"DJANGO_ROOT_MODULE={root_mod}")
 
