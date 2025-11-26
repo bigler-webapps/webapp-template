@@ -1,4 +1,4 @@
-name: Deploy JG Project Template App
+name: Deploy Kerzenziehen App
 
 on:
   push:
@@ -81,11 +81,11 @@ jobs:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          EMAIL_HOST: ${{ secrets.MAIL_HOST }}       # Mapped from your old secret name
-          EMAIL_PORT: ${{ secrets.MAIL_PORT }}
-          EMAIL_USE_TLS: ${{ secrets.MAIL_USE_TLS }}
-          EMAIL_USER: ${{ secrets.MAIL_USERNAME }}
-          EMAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}       # Mapped from your old secret name
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           
         run: |
           python scripts/generate_env.py --env ${{ env.TARGET_ENV }}
