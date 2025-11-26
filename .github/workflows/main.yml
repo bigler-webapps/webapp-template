@@ -1,9 +1,9 @@
-name: Deploy project_template_app
+name: Deploy JG Project Template App
 
 on:
   push:
     tags:
-      - 'deploy-project_template_app-*'
+      - 'deploy-jg_ferien-*'
   workflow_dispatch:
     inputs:
       environment:
@@ -56,7 +56,6 @@ jobs:
           project_name = config['project_name']
 
           # 3. Calculate Remote Path
-          # Logic: /srv/apps/queue (prod) OR /srv/apps/queue_stage (stage)
           suffix = '_stage' if target_env == 'staging' else ''
           remote_path = f'/srv/apps/{project_name}{suffix}'
 
@@ -64,34 +63,35 @@ jobs:
           print(f'✅ Project:     {project_name}')
           print(f'✅ Remote Path: {remote_path}')
 
-          # 4. Write to GitHub Env for next steps
+          # 4. Write to GitHub Env
           with open(os.environ['GITHUB_ENV'], 'a') as f:
               f.write(f'TARGET_ENV={target_env}\n')
               f.write(f'REMOTE_PATH={remote_path}\n')
           "
 
       # ---------------------------------------------------------
-      # STEP 2: Generate .env (Using the ENV we just set)
+      # STEP 2: Generate .env
       # ---------------------------------------------------------
       - name: Generate .env
         env:
-          # ALL Secrets must be passed explicitly here
+          # Standard Secrets
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_HOST: ${{ secrets.MAIL_HOST }}       # Mapped from your old secret name
+          EMAIL_PORT: ${{ secrets.MAIL_PORT }}
+          EMAIL_USE_TLS: ${{ secrets.MAIL_USE_TLS }}
+          EMAIL_USER: ${{ secrets.MAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          
         run: |
           python scripts/generate_env.py --env ${{ env.TARGET_ENV }}
 
       # ---------------------------------------------------------
-      # STEP 3: Rsync to Server
+      # STEP 3: Rsync
       # ---------------------------------------------------------
       - name: Rsync project to server
         uses: burnett01/rsync-deployments@7.0.2
@@ -102,9 +102,9 @@ jobs:
           switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml' --exclude '.git' --exclude 'frontend/node_modules' --exclude '__pycache__'
           path: "./"
           remote_path: ${{ env.REMOTE_PATH }}
-          
+
       # ---------------------------------------------------------
-      # STEP 4: Docker Start & Migrate
+      # STEP 4: Docker Start
       # ---------------------------------------------------------
       - name: Build & restart containers
         uses: appleboy/ssh-action@v0.1.10
@@ -115,22 +115,17 @@ jobs:
           script: |
             set -euo pipefail
             
-            # Go to the dynamic path calculated in Step 1
             cd ${{ env.REMOTE_PATH }}
             
-            # Safety check
             if [ ! -f .env ]; then echo "❌ .env missing"; exit 1; fi
             
-            # Build and Start
             docker compose --env-file .env up -d --build --remove-orphans
             
             echo "⏳ Waiting for DB..."
             sleep 5
             
-            # Dynamic Container Selection for Migration
-            # We read the prefix from the generated .env file to know the container name
             PREFIX=$(grep "^CONTAINER_NAME_PREFIX=" .env | cut -d '=' -f2)
             CTR_NAME="${PREFIX}_backend"
             
             echo "🚀 Starting migration on container: $CTR_NAME"
-            docker compose exec -T "$CTR_NAME" python manage.py migrate --noinput
+            docker compose exec -T backend python manage.py migrate --noinput
