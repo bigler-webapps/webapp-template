@@ -1,4 +1,4 @@
-name: Deploy Kerzenziehen App
+name: Deploy Project Template App
 
 on:
   push:
