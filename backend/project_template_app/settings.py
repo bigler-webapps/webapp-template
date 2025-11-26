@@ -39,7 +39,6 @@ CSRF_COOKIE_SECURE = not DEBUG
 
 # 4. Application Definition
 INSTALLED_APPS = [
-    "django.contrib.gis",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
