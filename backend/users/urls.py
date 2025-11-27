@@ -10,5 +10,6 @@ router.register(r"", UserViewSet, basename="user")
 urlpatterns = [
     # nur noch CSRF-Helper + User-Viewset
     path("csrf/", csrf_token_view, name="csrf"),
+    
     path("", include(router.urls)),
 ]
