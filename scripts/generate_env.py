@@ -119,9 +119,18 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
 
     # --- Infrastructure ---
     env_content.append(f"\n# --- Infrastructure ---")
-    ctr_prefix = config.get("container_prefix", "app")
+    
+    # Fetch the base prefix (now "jg_ferien")
+    base_prefix = config.get("container_prefix", "app")
+    
+    # Logic: Construct the full prefix based on environment
     if env_name == "staging":
-        ctr_prefix += "_stage"
+        ctr_prefix = f"{base_prefix}_stage"
+    elif env_name == "production":
+        ctr_prefix = f"{base_prefix}_prod"
+    else:
+        # Fallback for local or other environments
+        ctr_prefix = base_prefix
     
     env_content.append(f"CONTAINER_NAME_PREFIX={ctr_prefix}")
     env_content.append(f"ROUTER_NAME={config.get('project_name')}-{env_name}")
@@ -139,9 +148,11 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
 
     db_vol = get_vol_name("postgres_data", f"{ctr_prefix}_postgres_data")
     media_vol = get_vol_name("media_volume", f"{ctr_prefix}_media_volume")
+    excel_vol = get_vol_name("excel_volume", f"{ctr_prefix}_excel_volume")
 
     env_content.append(f"DB_VOLUME_NAME={db_vol}")
     env_content.append(f"MEDIA_VOLUME_NAME={media_vol}")
+    env_content.append(f"EXCEL_VOLUME_NAME={excel_vol}")
 
     # --- Network ---
     main_domain = domains[0] if domains else "localhost"
@@ -162,16 +173,6 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
 
     root_mod = config.get("root_module", "project_template_app")
     env_content.append(f"DJANGO_ROOT_MODULE={root_mod}")
-
-    # --- Auth / Social Secrets ---
-    env_content.append(f"\n# --- Social Auth ---")
-    # Google
-    env_content.append(f"GOOGLE_CLIENT_ID={resolve('GOOGLE_CLIENT_ID', required_in_prod=False)}")
-    env_content.append(f"GOOGLE_SECRET={resolve('GOOGLE_SECRET', required_in_prod=False)}")
-    # Microsoft
-    env_content.append(f"MICROSOFT_CLIENT_ID={resolve('MICROSOFT_CLIENT_ID', required_in_prod=False)}")
-    env_content.append(f"MICROSOFT_SECRET={resolve('MICROSOFT_SECRET', required_in_prod=False)}")
-    env_content.append(f"MICROSOFT_TENANT_ID={resolve('MICROSOFT_TENANT_ID', required_in_prod=False)}")
 
     write_env_file(output_path, env_content)
 
