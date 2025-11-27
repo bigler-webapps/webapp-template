@@ -31,34 +31,40 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         instance.profile.save()
 
 
-# --- IN users/models.py EINFÜGEN ---
-import traceback
+# --- IN users/models.py (KORRIGIERT) ---
 import sys
+import traceback
+from django.conf import settings
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.contrib.auth import get_user_model
 
-@receiver(pre_save, sender=get_user_model())
+# WICHTIG: sender als String übergeben, nicht als Klasse aufrufen!
+@receiver(pre_save, sender=settings.AUTH_USER_MODEL)
 def debug_password_wiping(sender, instance, **kwargs):
     # Nur prüfen, wenn der User schon existiert (kein Create)
     if instance.pk:
         try:
-            # Den aktuellen Zustand aus der DB laden
+            # Hier drin ist es sicher, auf die DB zuzugreifen
+            # sender ist zur Laufzeit die User-Klasse
             old_user = sender.objects.get(pk=instance.pk)
             
-            # Hatte er ein Passwort? Und hat er jetzt keins mehr (oder ein ungültiges)?
-            if old_user.has_usable_password() and not instance.has_usable_password():
+            # Hatte er ein Passwort? Und hat er jetzt keins mehr?
+            # Wir prüfen auf "unusable" (das ! am Anfang des Hashs) oder leeren String
+            old_has_pw = old_user.password and not old_user.password.startswith('!')
+            new_has_no_pw = not instance.password or instance.password.startswith('!')
+
+            if old_has_pw and new_has_no_pw:
                 msg = (
                     f"\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                     f"ALARM: Das Passwort für {instance.email} wird gerade gelöscht!\n"
-                    f"Vorher: {old_user.password[:10]}...\n"
-                    f"Nachher: {instance.password}\n"
+                    f"Vorher Hash Start: {old_user.password[:10]}...\n"
+                    f"Nachher Hash: {instance.password}\n"
                     f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                 )
-                # Wir schreiben direkt in sys.stdout und flushen, damit Docker es sofort zeigt
                 sys.stdout.write(msg)
+                # Stack Trace ausgeben, um den Übeltäter zu finden
                 traceback.print_stack(file=sys.stdout)
                 sys.stdout.flush()
         except sender.DoesNotExist:
             pass
-# -----------------------------------
+# ---------------------------------------
