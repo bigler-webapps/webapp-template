@@ -188,6 +188,8 @@ ACCOUNT_SIGNUP_FIELDS = [
     # "password2*", # Uncomment if you want "Confirm Password" field
 ]
 
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
