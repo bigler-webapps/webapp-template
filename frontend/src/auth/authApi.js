@@ -154,7 +154,28 @@ export async function logoutSession() {
  * 2. Uses the correct path '/providers/{provider}/login'.
  */
 export function startSocialLogin(provider) {
-  window.location.href = `/accounts/${provider}/login/?process=login`;
+  const form = document.createElement('form');
+  form.style.display = 'none';
+  form.method = 'POST';
+  form.action = `/accounts/${provider}/login/`;
+
+  // 1) process=login
+  const inputProcess = document.createElement('input');
+  inputProcess.name = 'process';
+  inputProcess.value = 'login';
+  form.appendChild(inputProcess);
+
+  // 2) CSRF-Token aus Cookie holen und als hidden-Feld mitsenden
+  const csrfToken = getCsrfToken();
+  if (csrfToken) {
+    const inputCsrf = document.createElement('input');
+    inputCsrf.name = 'csrfmiddlewaretoken';
+    inputCsrf.value = csrfToken;
+    form.appendChild(inputCsrf);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
 }
 
 
