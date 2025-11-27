@@ -184,38 +184,33 @@ ACCOUNT_SIGNUP_FIELDS = [
     # KEIN password1* nötig für Social-Login; dein eigenes Passwort-Formular machst du via API
 ]
 
-SOCIALACCOUNT_AUTO_SIGNUP = True          # neuer User darf automatisch angelegt werden
-SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_QUERY_EMAIL = True
-SOCIALACCOUNT_LOGIN_ON_GET = False        # wir machen POST
+SOCIALACCOUNT_EMAIL_REQUIRED = True
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
-        "APPS": [
-            {
-                "client_id": env("GOOGLE_CLIENT_ID", default="google-client-build-dummy"),
-                "secret": env("GOOGLE_SECRET", default="google-secret-build-dummy"),
-                "key": "",
-                "settings": {
-                    "scope": ["profile", "email"],
-                    "auth_params": {
-                        "access_type": "online",
-                    },
-                },
-            }
-        ],
+        "APP": {
+            "client_id": env("GOOGLE_CLIENT_ID", default=""),
+            "secret": env("GOOGLE_SECRET", default=""),
+            "key": "",
+        },
         "SCOPE": ["profile", "email"],
         "AUTH_PARAMS": {"access_type": "online"},
+        # Speziell für Google erlaubt:
+        "EMAIL_AUTHENTICATION": True,
+        # einige Beispiele setzen auch:
+        # "EMAIL_AUTHENTICATION_AUTO_CONNECT": True,
     },
     "microsoft": {
-        "APPS": [
-            {
-                "client_id": env("MICROSOFT_CLIENT_ID", default="ms-client-build-dummy"),
-                "secret": env("MICROSOFT_SECRET", default="ms-secret-build-dummy"),
-                "key": "",
-                # optional: tenant in settings
-            }
-        ],
+        "APP": {
+            "client_id": env("MICROSOFT_CLIENT_ID", default=""),
+            "secret": env("MICROSOFT_SECRET", default=""),
+            "key": "",
+        },
         "SCOPE": ["User.Read"],
     },
 }
