@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.microsoft",
 
     "django_core.invitations",
+    "django_core.auth",
 
     # Local
     "users",
