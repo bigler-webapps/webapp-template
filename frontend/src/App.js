@@ -12,50 +12,88 @@ import { CLIENT_ID } from './utils/clientId';
 
 import Header from './components/Header';
 
-// Auth
-import { AuthProvider } from './auth/AuthContext';
-import LoginPage from './auth/pages/LoginPage';
-import PasswordResetRequestPage from './auth/pages/PasswordResetRequestPage';
-import PasswordChangePage from './auth/pages/PasswordChangePage';
-import PasswordInvitePage from './auth/pages/PasswordInvitePage';
+// --- NEU: Importe aus der Bibliothek ---
+import { 
+  AuthProvider, 
+  LoginPage, 
+  AccountPage,
+  PasswordResetRequestPage, 
+  PasswordChangePage,
+  PasswordInvitePage 
+} from 'webapp-management';
 
-// Restliche Seiten
+// --- Lokal verbliebene Seiten (Business Logic) ---
 import Home from './pages/Home';
 import UserManagementPage from './pages/UserManagementPage';
-import AccountPage from './auth/pages/AccountPage';
 import WelcomePage from './pages/WelcomePage';
 
 // Default Client-ID Header für axios
 axios.defaults.headers.common['X-Client-ID'] = CLIENT_ID;
 
+// --- AUTH KONFIGURATION ---
+// Definiert die Basis-URL für die authApi in der Bibliothek
+const AUTH_CONFIG = {
+  // Im Development (Port 3000) müssen wir auf 8000 zeigen.
+  // In Production (gleiche Domain) lassen wir es leer (= relativ).
+  baseUrl: process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '',
+};
+
 function App() {
   return (
-    <AuthProvider>
+    // 1. AuthProvider umschließt alles und bekommt die Config
+    <AuthProvider endpoints={AUTH_CONFIG}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Helmet>
           <title>PROJECT_NAME</title>
         </Helmet>
+        
         <Router>
           <Header />
           <Routes>
+            {/* --- App Pages --- */}
             <Route path="/" element={<Home />} />
             <Route path="/user-management" element={<UserManagementPage />} />
+            <Route path="/welcome" element={<WelcomePage />} />
 
-            {/* Auth */}
-            <Route path="/login" element={<LoginPage />} />
+            {/* --- Auth Pages (aus der Lib) --- */}
+            <Route 
+              path="/login" 
+              element={
+                <LoginPage 
+                  appName="PROJECT_NAME" 
+                  redirectAfterLogin="/"
+                  registerPath="/signup" // Falls du Registrierung hast
+                />
+              } 
+            />
+            
+            <Route 
+              path="/account" 
+              element={<AccountPage />} 
+            />
+
             <Route
               path="/reset-request-password"
               element={<PasswordResetRequestPage />}
             />
-            <Route path="/change-password" element={<PasswordChangePage />} />
+            
+            <Route 
+              path="/change-password" 
+              element={<PasswordChangePage />} 
+            />
 
-            <Route path="/invite/:uid/:token" element={<PasswordInvitePage mode="invite" />} />
-            <Route path="/reset/:uid/:token" element={<PasswordInvitePage mode="reset" />} />
+            {/* Diese Page muss in der Lib so gebaut sein, dass sie 'mode' akzeptiert */}
+            <Route 
+              path="/invite/:uid/:token" 
+              element={<PasswordInvitePage mode="invite" />} 
+            />
+            
+            <Route 
+              path="/reset/:uid/:token" 
+              element={<PasswordInvitePage mode="reset" />} 
+            />
 
-            {/* Profil / Onboarding */}
-            <Route path="/account" element={<AccountPage />} />
-            <Route path="/welcome" element={<WelcomePage />} />
           </Routes>
         </Router>
       </ThemeProvider>

@@ -2,16 +2,26 @@
 FROM --platform=$BUILDPLATFORM node:24-alpine AS deps
 WORKDIR /app
 
-# ENTFERNT: Hier keine Python-Sachen kopieren oder installieren!
-# Node Image hat kein Pip.
-
 # Setup Node tools
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy only Frontend dependency definitions
+# 1. Copy Package Files
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
-# Install Frontend Dependencies
+# 2. INJECTION: Kopiere die Bibliothek, die wir per GitHub Action bereitgestellt haben
+# Wir kopieren sie in einen festen Ordner im Container, z.B. /app/lib_core
+# Hinweis: Pfad muss matchen mit dem, was wir im Repo haben (z.B. src/ui_core)
+COPY frontend/temp_lib_injection/src/ui_core ./lib_core
+
+# 3. PATH REWRITE: Wir ändern den Pfad in package.json für den Docker-Build
+# Von: "file:../../webapp-management/src/ui_core" (Lokal)
+# Zu:  "file:./lib_core" (Docker Container)
+# Wir nutzen 'npm pkg set', das ist in Node integriert.
+RUN npm pkg set dependencies.webapp-management="file:./lib_core"
+
+# 4. Install Dependencies
+# WICHTIG: Da wir package.json geändert haben, stimmt der Lockfile-Hash nicht mehr.
+# --no-frozen-lockfile ist hier zwingend notwendig (hatten Sie aber schon).
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --prod --no-frozen-lockfile
 
@@ -24,7 +34,6 @@ COPY frontend/ ./
 # Build React App
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm run build
-
 
 # --- [2] Python / Django phase ---
 FROM python:3.12-slim
