@@ -2,6 +2,9 @@
 FROM --platform=$BUILDPLATFORM node:24-alpine AS deps
 WORKDIR /app
 
+COPY backend/ ./   
+RUN pip install -r requirements.txt
+
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
