@@ -10,7 +10,6 @@ daphne>=4.0
 whitenoise>=6.0
 django-allauth[mfa]
 requests>=2.31
-jwt>=1.3
 PyJWT[crypto]>=2.8.0
 PyYAML>=6.0
 django-environ
