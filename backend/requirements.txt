@@ -14,3 +14,4 @@ PyJWT[crypto]>=2.8.0
 PyYAML>=6.0
 django-environ
 django-crontab
+git+https://github.com/MichaBigler/webapp-management.git@main#egg=django_core
