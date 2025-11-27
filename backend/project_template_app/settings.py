@@ -191,20 +191,36 @@ SOCIALACCOUNT_LOGIN_ON_GET = False        # wir machen POST
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
-        "APP": {
-            "client_id": env("GOOGLE_CLIENT_ID", default=""),
-            "secret": env("GOOGLE_SECRET", default=""),
-            "key": "",
-        },
+        # NEU: Liste APPS statt einzelnes APP
+        "APPS": [
+            {
+                "client_id": env("GOOGLE_CLIENT_ID"),
+                "secret": env("GOOGLE_SECRET"),
+                "key": "",
+                # optional: per-App Settings
+                "settings": {
+                    "scope": ["profile", "email"],
+                    "auth_params": {
+                        "access_type": "online",
+                    },
+                },
+            }
+        ],
+        # Provider-weite Defaults (optional, aber schadet nicht)
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online"},
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
     },
     "microsoft": {
-        "APP": {
-            "client_id": env("MICROSOFT_CLIENT_ID", default=""),
-            "secret": env("MICROSOFT_SECRET", default=""),
-            "key": "",
-        },
+        "APPS": [
+            {
+                "client_id": env("MICROSOFT_CLIENT_ID"),
+                "secret": env("MICROSOFT_SECRET"),
+                "key": "",
+                # "settings": {"tenant": env("MICROSOFT_TENANT_ID", default="common")},
+            }
+        ],
         "SCOPE": ["User.Read"],
     },
 }
