@@ -265,20 +265,3 @@ LOGGING = {
     },
 }
 
-# --- DEBUG TRAP START ---
-import traceback
-from django.contrib.auth.models import User
-
-# Wir speichern die originale Methode
-original_set_unusable = User.set_unusable_password
-
-def debug_set_unusable_password(self):
-    print(f"\n!!! ACHTUNG: set_unusable_password wurde für User '{self.username}' aufgerufen !!!")
-    print("Hier ist der Übeltäter (Stack Trace):")
-    # Dies druckt genau aus, welche Datei/Zeile den Befehl gab
-    traceback.print_stack() 
-    return original_set_unusable(self)
-
-# Wir überschreiben die Methode global
-User.set_unusable_password = debug_set_unusable_password
-# --- DEBUG TRAP END ---
