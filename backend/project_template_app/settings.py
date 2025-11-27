@@ -191,13 +191,11 @@ SOCIALACCOUNT_LOGIN_ON_GET = False        # wir machen POST
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
-        # NEU: Liste APPS statt einzelnes APP
         "APPS": [
             {
-                "client_id": env("GOOGLE_CLIENT_ID"),
-                "secret": env("GOOGLE_SECRET"),
+                "client_id": env("GOOGLE_CLIENT_ID", default="google-client-build-dummy"),
+                "secret": env("GOOGLE_SECRET", default="google-secret-build-dummy"),
                 "key": "",
-                # optional: per-App Settings
                 "settings": {
                     "scope": ["profile", "email"],
                     "auth_params": {
@@ -206,24 +204,22 @@ SOCIALACCOUNT_PROVIDERS = {
                 },
             }
         ],
-        # Provider-weite Defaults (optional, aber schadet nicht)
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        },
+        "AUTH_PARAMS": {"access_type": "online"},
     },
     "microsoft": {
         "APPS": [
             {
-                "client_id": env("MICROSOFT_CLIENT_ID"),
-                "secret": env("MICROSOFT_SECRET"),
+                "client_id": env("MICROSOFT_CLIENT_ID", default="ms-client-build-dummy"),
+                "secret": env("MICROSOFT_SECRET", default="ms-secret-build-dummy"),
                 "key": "",
-                # "settings": {"tenant": env("MICROSOFT_TENANT_ID", default="common")},
+                # optional: tenant in settings
             }
         ],
         "SCOPE": ["User.Read"],
     },
 }
+
 
 HEADLESS_ONLY = False
 HEADLESS_CLIENTS = ["browser"]
