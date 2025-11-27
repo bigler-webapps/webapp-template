@@ -4,7 +4,6 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from users.views import csrf_token_view
-from users.views_debug import WhoAmI
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -25,7 +24,7 @@ urlpatterns += [
     # WICHTIG: komplette Allauth-URLs, nicht nur socialaccount
     # HEADLESS_ONLY=True sorgt dafür, dass klassische Seiten (account_login etc.)
     # nicht „sichtbar“ sind, aber die Provider-Callbacks (google_callback) verfügbar bleiben.
-    path("api/debug/whoami/", WhoAmI.as_view()),
+    
     path("accounts/", include("allauth.urls")),
 
     # SPA-Fallback ganz am Schluss
