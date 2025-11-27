@@ -20,5 +20,11 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += [
+    path("accounts/", include("allauth.socialaccount.urls")),
+    
+    # Provider-spezifische URLs (hier werden 'google_callback' und 'microsoft_callback' definiert)
+    path("accounts/google/", include("allauth.socialaccount.providers.google.urls")),
+    path("accounts/microsoft/", include("allauth.socialaccount.providers.microsoft.urls")),
     re_path(r"^.*$", TemplateView.as_view(template_name="index.html"), name="spa-fallback"),
+
 ]
