@@ -1,20 +1,21 @@
 # users/adapters.py
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.exceptions import ImmediateHttpResponse
-from django.shortcuts import render
-from django_core.invitations.models import Invitation  # Annahme: Das Model liegt hier
+from django.contrib.auth import get_user_model
 
 class InvitationOnlySocialAdapter(DefaultSocialAccountAdapter):
     def is_open_for_signup(self, request, sociallogin):
         """
-        Prüft, ob für die E-Mail des Social-Logins eine gültige Einladung vorliegt.
-        Wenn nicht, wird die Registrierung blockiert.
+        Erlaubt den Social Login NUR, wenn die E-Mail-Adresse bereits 
+        als User in der Datenbank existiert (d.h. der User wurde eingeladen/vorerstellt).
         """
+        User = get_user_model()
         email = sociallogin.user.email
         
-        # 1. Prüfen: Gibt es diese E-Mail überhaupt in den Einladungen?
-        # Passen Sie den Import und die Query an Ihr Invitation-Model an.
-        if not Invitation.objects.filter(email=email, accepted=False).exists():
-             return False # Blockiert den Signup Prozess
-             
-        return True
+        # Suchen wir nach einem existierenden Nutzer mit dieser E-Mail
+        # (Case-insensitive Suche ist sicherer: 'email__iexact')
+        if User.objects.filter(email__iexact=email).exists():
+            return True
+        
+        # Optional: Loggen Sie den Fehlversuch, damit Sie sehen, wer abgelehnt wurde
+        # print(f"Login abgelehnt für nicht eingeladene Email: {email}")
+        return False
