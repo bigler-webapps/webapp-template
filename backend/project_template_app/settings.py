@@ -66,14 +66,14 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_MODULE = env("DJANGO_ROOT_MODULE", default="project_template_app")
@@ -189,6 +189,8 @@ ACCOUNT_SIGNUP_FIELDS = [
 ]
 
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+LOGIN_REDIRECT_URL = "/"
+SOCIALACCOUNT_LOGIN_ON_GET = False 
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {

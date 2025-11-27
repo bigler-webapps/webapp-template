@@ -157,21 +157,15 @@ export function startSocialLogin(provider) {
   const form = document.createElement('form');
   form.style.display = 'none';
   form.method = 'POST';
-  form.action = `${HEADLESS_BASE}/auth/provider/redirect`;
 
-  const data = {
-    provider,                                // "google"
-    process: 'login',
-    callback_url: window.location.origin,    // http://localhost:8125
-    csrfmiddlewaretoken: getCsrfToken() || '',
-  };
+  // Klassische Allauth-URL, NICHT headless
+  form.action = `/accounts/${provider}/login/`;
 
-  Object.entries(data).forEach(([name, value]) => {
-    const input = document.createElement('input');
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
-  });
+  // allauth erwartet ein 'process' Feld
+  const inputProcess = document.createElement('input');
+  inputProcess.name = 'process';
+  inputProcess.value = 'login';
+  form.appendChild(inputProcess);
 
   document.body.appendChild(form);
   form.submit();
