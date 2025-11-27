@@ -189,10 +189,12 @@ ACCOUNT_SIGNUP_FIELDS = [
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
-SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
+SOCIALACCOUNT_ADAPTER = "users.adapters.InvitationOnlySocialAdapter"
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -215,6 +217,9 @@ SOCIALACCOUNT_PROVIDERS = {
             "key": "",
         },
         "SCOPE": ["User.Read"],
+        "AUTH_PARAMS": {
+            "prompt": "select_account",  # <--- WICHTIG: Erzwingt die Kontoauswahl
+        },
     },
 }
 
