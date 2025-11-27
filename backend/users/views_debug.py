@@ -8,8 +8,6 @@ from allauth.headless.contrib.rest_framework.authentication import (
 )
 
 class WhoAmI(APIView):
-    # Wenn du REST_FRAMEWORK schon angepasst hast, kannst du die Zeile auch weglassen
-    authentication_classes = [XSessionTokenAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):

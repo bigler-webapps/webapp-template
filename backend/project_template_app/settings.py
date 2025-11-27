@@ -163,7 +163,7 @@ AUTHENTICATION_BACKENDS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "allauth.headless.contrib.rest_framework.authentication.XSessionTokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ]
 }
 
