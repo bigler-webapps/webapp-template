@@ -188,6 +188,36 @@ ACCOUNT_SIGNUP_FIELDS = [
     # "password2*", # Uncomment if you want "Confirm Password" field
 ]
 
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": env("GOOGLE_CLIENT_ID", default=""),
+            "secret": env("GOOGLE_SECRET", default=""),
+            "key": ""
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        }
+    },
+    "microsoft": {
+        "APP": {
+            "client_id": env("MICROSOFT_CLIENT_ID", default=""),
+            "secret": env("MICROSOFT_SECRET", default=""),
+            "key": "",
+            # Bei Microsoft oft nötig, um Multi-Tenant vs Single-Tenant zu steuern:
+            # "settings": {
+            #    "tenant": env("MICROSOFT_TENANT_ID", default="common"),
+            # }
+        },
+        "SCOPE": ["User.Read"], 
+        # "tenant": "organizations", # oder 'common' oder die Tenant ID
+    }
+}
+
 HEADLESS_ONLY = True
 HEADLESS_CLIENTS = ["browser"]
 HEADLESS_FRONTEND_URLS = {

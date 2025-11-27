@@ -86,6 +86,13 @@ jobs:
           EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+
+          # --- NEU: Social Login Secrets ---
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
+          MICROSOFT_CLIENT_ID: ${{ secrets.MICROSOFT_CLIENT_ID }}
+          MICROSOFT_SECRET: ${{ secrets.MICROSOFT_SECRET }}
+          MICROSOFT_TENANT_ID: ${{ secrets.MICROSOFT_TENANT_ID }}
           
         run: |
           python scripts/generate_env.py --env ${{ env.TARGET_ENV }}

@@ -163,6 +163,16 @@ def generate_env(env_name, config_path="project.yaml", output_path=".env"):
     root_mod = config.get("root_module", "project_template_app")
     env_content.append(f"DJANGO_ROOT_MODULE={root_mod}")
 
+    # --- Auth / Social Secrets ---
+    env_content.append(f"\n# --- Social Auth ---")
+    # Google
+    env_content.append(f"GOOGLE_CLIENT_ID={resolve('GOOGLE_CLIENT_ID', required_in_prod=False)}")
+    env_content.append(f"GOOGLE_SECRET={resolve('GOOGLE_SECRET', required_in_prod=False)}")
+    # Microsoft
+    env_content.append(f"MICROSOFT_CLIENT_ID={resolve('MICROSOFT_CLIENT_ID', required_in_prod=False)}")
+    env_content.append(f"MICROSOFT_SECRET={resolve('MICROSOFT_SECRET', required_in_prod=False)}")
+    env_content.append(f"MICROSOFT_TENANT_ID={resolve('MICROSOFT_TENANT_ID', required_in_prod=False)}")
+
     write_env_file(output_path, env_content)
 
 if __name__ == "__main__":
