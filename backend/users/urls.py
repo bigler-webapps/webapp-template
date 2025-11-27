@@ -2,7 +2,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from views_debug import WhoAmI
+from .views_debug import WhoAmI
 
 from .views import csrf_token_view, UserViewSet
 
