@@ -169,28 +169,19 @@ REST_FRAMEWORK = {
 
 ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
 
-# 1. Database Model Config (Keep this)
-# This ensures the DB doesn't expect a username
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None 
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = "optional"  # oder "mandatory"
 
-# 2. Login Method (Keep this)
-ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_EMAIL_VERIFICATION = "optional"
-
-# 3. Form Configuration (THE FIX)
-# - We remove 'username' from this list to satisfy "No Username".
-# - We add 'email*' with an asterisk to satisfy "Email Required".
-# - We include password fields explicitly as per the new warning recommendation.
-ACCOUNT_SIGNUP_FIELDS = [
-    "email*",
-    # "password2*", # Uncomment if you want "Confirm Password" field
-]
-
-SOCIALACCOUNT_AUTO_SIGNUP = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 LOGIN_REDIRECT_URL = "/"
-SOCIALACCOUNT_LOGIN_ON_GET = True 
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
+SOCIALACCOUNT_AUTO_SIGNUP = True           # neuer User wird automatisch angelegt
+SOCIALACCOUNT_EMAIL_REQUIRED = True        # Social-User MUSS eine Mail liefern
+SOCIALACCOUNT_QUERY_EMAIL = True           # Mail bei Provider anfragen
+SOCIALACCOUNT_LOGIN_ON_GET = False         # Login-Start
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
