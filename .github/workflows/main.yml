@@ -129,3 +129,4 @@ jobs:
             
             echo "🚀 Starting migration on container: $CTR_NAME"
             docker compose exec -T backend python manage.py migrate --noinput
+            docker compose exec -T backend python manage.py update_site_domain
