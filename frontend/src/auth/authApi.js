@@ -154,22 +154,9 @@ export async function logoutSession() {
  * 2. Uses the correct path '/providers/{provider}/login'.
  */
 export function startSocialLogin(provider) {
-  const form = document.createElement('form');
-  form.style.display = 'none';
-  form.method = 'POST';
-
-  // Klassische Allauth-URL, NICHT headless
-  form.action = `/accounts/${provider}/login/`;
-
-  // allauth erwartet ein 'process' Feld
-  const inputProcess = document.createElement('input');
-  inputProcess.name = 'process';
-  inputProcess.value = 'login';
-  form.appendChild(inputProcess);
-
-  document.body.appendChild(form);
-  form.submit();
+  window.location.href = `/accounts/${provider}/login/?process=login`;
 }
+
 
 /**
  * Loads the current session information directly from allauth headless.
