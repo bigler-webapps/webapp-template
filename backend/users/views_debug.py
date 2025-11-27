@@ -1,21 +1,14 @@
-from rest_framework.views import APIView
+# z.B. in users/views_debug.py
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-
-# Falls du nicht global über REST_FRAMEWORK konfigurierst:
-from allauth.headless.contrib.rest_framework.authentication import (
-    XSessionTokenAuthentication,
-)
 
 class WhoAmI(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        return Response(
-            {
-                "is_authenticated": user.is_authenticated,
-                "id": user.id if user.is_authenticated else None,
-                "email": getattr(user, "email", ""),
-            }
-        )
+    def get(self, request):
+        user = getattr(request, "user", None)
+        return Response({
+            "is_authenticated": bool(getattr(user, "is_authenticated", False)),
+            "username": getattr(user, "email", None) or getattr(user, "username", None),
+        })
