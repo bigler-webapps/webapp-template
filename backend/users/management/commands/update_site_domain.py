@@ -2,6 +2,8 @@ from django.core.management.base import BaseCommand
 from django.contrib.sites.models import Site
 from django.conf import settings
 from urllib.parse import urlparse
+from django.conf import settings
+
 
 class Command(BaseCommand):
     help = 'Updates the default Site object (ID=1) with the current domain from settings.'
@@ -21,9 +23,11 @@ class Command(BaseCommand):
         
         # Display Name etwas hübscher machen (Projektname oder Domain)
         # Wir nehmen hier einfach den Projektnamen oder Fallback auf Domain
-        project_name = "Project Template" # Könnte man auch aus settings laden, falls vorhanden
+        project_name = getattr(settings, "PROJECT_NAME", domain)
 
-        site = Site.objects.get(pk=1)
+
+        site_id = getattr(settings, "SITE_ID", 1)
+        site, _ = Site.objects.get_or_create(pk=site_id)
         
         if site.domain == domain and site.name == project_name:
             self.stdout.write(self.style.SUCCESS(f'Site is already set to {domain}. No changes needed.'))
