@@ -184,10 +184,10 @@ ACCOUNT_EMAIL_VERIFICATION = "optional"
 # - We include password fields explicitly as per the new warning recommendation.
 ACCOUNT_SIGNUP_FIELDS = [
     "email*",
-    "password1*",
     # "password2*", # Uncomment if you want "Confirm Password" field
 ]
 
+SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 LOGIN_REDIRECT_URL = "/"
 SOCIALACCOUNT_LOGIN_ON_GET = True 
