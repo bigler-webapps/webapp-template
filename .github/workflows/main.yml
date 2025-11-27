@@ -1,9 +1,11 @@
-name: Deploy Project Template App
+name: Deploy App
 
 on:
+  # 1. Automatischer Trigger bei Tags
   push:
-    tags:
-      - 'deploy-jg_ferien-*'
+    tags: ['deploy-*']
+
+  # 2. Manuelles Menü
   workflow_dispatch:
     inputs:
       environment:
@@ -16,124 +18,15 @@ on:
           - production
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      # ---------------------------------------------------------
-      # SETUP: Install Python & Tools
-      # ---------------------------------------------------------
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: pip install PyYAML
-
-      # ---------------------------------------------------------
-      # STEP 1: Determine Environment & Dynamic Path
-      # ---------------------------------------------------------
-      - name: Calculate Configuration
-        run: |
-          python3 -c "
-          import os, yaml
-
-          # 1. Determine Target Environment
-          event_name = '${{ github.event_name }}'
-          input_env = '${{ github.event.inputs.environment }}'
-          
-          if event_name == 'workflow_dispatch':
-              target_env = input_env
-          else:
-              target_env = 'production'
-
-          # 2. Read project.yaml
-          with open('project.yaml') as f:
-              config = yaml.safe_load(f)
-          
-          project_name = config['project_name']
-
-          # 3. Calculate Remote Path
-          suffix = '_stage' if target_env == 'staging' else ''
-          remote_path = f'/srv/apps/{project_name}{suffix}'
-
-          print(f'✅ Environment: {target_env}')
-          print(f'✅ Project:     {project_name}')
-          print(f'✅ Remote Path: {remote_path}')
-
-          # 4. Write to GitHub Env
-          with open(os.environ['GITHUB_ENV'], 'a') as f:
-              f.write(f'TARGET_ENV={target_env}\n')
-              f.write(f'REMOTE_PATH={remote_path}\n')
-          "
-
-      # ---------------------------------------------------------
-      # STEP 2: Generate .env
-      # ---------------------------------------------------------
-      - name: Generate .env
-        env:
-          # Standard Secrets
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}       # Mapped from your old secret name
-          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-          EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-
-          # --- NEU: Social Login Secrets ---
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
-          MICROSOFT_CLIENT_ID: ${{ secrets.MICROSOFT_CLIENT_ID }}
-          MICROSOFT_SECRET: ${{ secrets.MICROSOFT_SECRET }}
-          MICROSOFT_TENANT_ID: ${{ secrets.MICROSOFT_TENANT_ID }}
-          
-        run: |
-          python scripts/generate_env.py --env ${{ env.TARGET_ENV }}
-
-      # ---------------------------------------------------------
-      # STEP 3: Rsync
-      # ---------------------------------------------------------
-      - name: Rsync project to server
-        uses: burnett01/rsync-deployments@7.0.2
-        with:
-          remote_host: ${{ secrets.SSH_HOST }}
-          remote_user: ${{ secrets.SSH_USER }}
-          remote_key:  ${{ secrets.SSH_PRIVATE_KEY }}
-          switches: -avzr --delete --exclude 'certbot/letsencrypt' --exclude 'docker-compose.override.yml' --exclude '.git' --exclude 'frontend/node_modules' --exclude '__pycache__'
-          path: "./"
-          remote_path: ${{ env.REMOTE_PATH }}
-
-      # ---------------------------------------------------------
-      # STEP 4: Docker Start
-      # ---------------------------------------------------------
-      - name: Build & restart containers
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -euo pipefail
-            
-            cd ${{ env.REMOTE_PATH }}
-            
-            if [ ! -f .env ]; then echo "❌ .env missing"; exit 1; fi
-            
-            docker compose --env-file .env up -d --build --remove-orphans
-            
-            echo "⏳ Waiting for DB..."
-            sleep 5
-            
-            PREFIX=$(grep "^CONTAINER_NAME_PREFIX=" .env | cut -d '=' -f2)
-            CTR_NAME="${PREFIX}_backend"
-            
-            echo "🚀 Starting migration on container: $CTR_NAME"
-            docker compose exec -T backend python manage.py migrate --noinput
-            docker compose exec -T backend python manage.py update_site_domain
+  call-deploy:
+    # Verweis auf den zentralen Workflow (Version beachten!)
+    uses: MichaBigler/webapp-management/.github/workflows/deploy-app.yml@main
+    
+    # Hier übergeben wir die Auswahl an den zentralen Workflow
+    with:
+      # Logik: Wenn manuell (inputs vorhanden), nimm das. 
+      # Sonst (bei Tag-Push), nimm 'production'.
+      environment: ${{ inputs.environment || 'production' }}
+    
+    # Übergibt alle Secrets (SSH, DB, etc.) automatisch
+    secrets: inherit
