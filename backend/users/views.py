@@ -1,6 +1,4 @@
-# backend/users/views.py
-from django.contrib.auth.models import User
-
+from django.contrib.auth import get_user_model
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -9,32 +7,28 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 
+from django_core.invitations.mixins import InviteActionsMixin  # <- NEU
 from .serializers import UserSerializer
 
 import logging
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 @ensure_csrf_cookie
 def csrf_token_view(request):
-    """
-    Return a simple JSON to ensure CSRF cookie is set on the client.
-
-    Das bleibt praktisch, damit das React-Frontend vor dem ersten POST
-    sicher einen CSRF-Cookie bekommt.
-    """
     return JsonResponse({"detail": "CSRF cookie set"})
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(InviteActionsMixin, viewsets.ModelViewSet):
     """
-    User-API ohne eigene Auth-Implementierung.
+    User-API:
 
-    - List/Retrieve/Update/Delete: nur für authentifizierte Nutzer (und
-      in der Praxis solltest du hier ggf. auf Admins beschränken).
-    - `current`: aktuellen User lesen / updaten.
-    - `update_role`: Rollenverwaltung mit einfachen Checks.
+    - list/retrieve/update/delete: nur für eingeloggte User
+    - current: eigenen User lesen/patchen
+    - update_role: Rollenverwaltung
+    - invite / invite-link: kommen aus InviteActionsMixin
     """
 
     queryset = User.objects.all()
@@ -48,12 +42,6 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path="current",
     )
     def current(self, request):
-        """
-        Return or update the current authenticated user.
-
-        Die Session/Authentifizierung kommt jetzt von django-allauth
-        (bzw. allauth.headless). Hier wird nur das Userobjekt serialisiert.
-        """
         if request.method == "GET":
             serializer = self.get_serializer(request.user)
             return Response(serializer.data)
@@ -70,9 +58,6 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path="update-role",
     )
     def update_role(self, request, pk=None):
-        """
-        Update the role of a user with permission checks.
-        """
         user = self.get_object()
         new_role = request.data.get("role")
         valid_roles = ["admin", "teacher", "student", "none"]
@@ -109,3 +94,11 @@ class UserViewSet(viewsets.ModelViewSet):
             )
 
         return Response({"detail": "Permission denied."}, status=403)
+    
+    def _is_admin_or_superuser(self, user) -> bool:
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+        role = getattr(getattr(user, "profile", None), "role", "none")
+        return role in {"admin", "teacher"}

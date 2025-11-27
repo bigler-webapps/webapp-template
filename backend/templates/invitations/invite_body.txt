@@ -1,0 +1,10 @@
+Hallo{% if user.first_name %} {{ user.first_name }}{% endif %},
+
+wir möchten dich auf unsere neue Webseite einladen.
+
+Bitte setze dein Passwort über folgenden Link:
+
+{{ url }}
+
+Liebe Grüsse
+Micha

@@ -1,0 +1,10 @@
+Hallo{% if user.first_name %} {{ user.first_name }}{% endif %},
+
+du kannst dein Passwort über folgenden Link zurücksetzen:
+
+{{ url }}
+
+Wenn du diese Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren.
+
+Liebe Grüsse
+Micha
