@@ -54,8 +54,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.mfa",
-    "allauth.headless",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.microsoft",
 
@@ -169,48 +167,46 @@ REST_FRAMEWORK = {
 
 ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
 
+
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
+
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = "optional"  # oder "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "optional"   # zum Testen entspannt
 
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
-SOCIALACCOUNT_AUTO_SIGNUP = True           # neuer User wird automatisch angelegt
-SOCIALACCOUNT_EMAIL_REQUIRED = True        # Social-User MUSS eine Mail liefern
-SOCIALACCOUNT_QUERY_EMAIL = True           # Mail bei Provider anfragen
-SOCIALACCOUNT_LOGIN_ON_GET = False         # Login-Start
+ACCOUNT_SIGNUP_FIELDS = [
+    "email*",
+    # KEIN password1* nötig für Social-Login; dein eigenes Passwort-Formular machst du via API
+]
+
+SOCIALACCOUNT_AUTO_SIGNUP = True          # neuer User darf automatisch angelegt werden
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_LOGIN_ON_GET = False        # wir machen POST
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
             "client_id": env("GOOGLE_CLIENT_ID", default=""),
             "secret": env("GOOGLE_SECRET", default=""),
-            "key": ""
+            "key": "",
         },
-        "SCOPE": [
-            "profile",
-            "email",
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        }
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
     },
     "microsoft": {
         "APP": {
             "client_id": env("MICROSOFT_CLIENT_ID", default=""),
             "secret": env("MICROSOFT_SECRET", default=""),
             "key": "",
-            # Bei Microsoft oft nötig, um Multi-Tenant vs Single-Tenant zu steuern:
-            # "settings": {
-            #    "tenant": env("MICROSOFT_TENANT_ID", default="common"),
-            # }
         },
-        "SCOPE": ["User.Read"], 
-        # "tenant": "organizations", # oder 'common' oder die Tenant ID
-    }
+        "SCOPE": ["User.Read"],
+    },
 }
 
 HEADLESS_ONLY = False
