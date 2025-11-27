@@ -50,10 +50,8 @@ function App() {
             />
             <Route path="/change-password" element={<PasswordChangePage />} />
 
-            {/* Passwort setzen über E-Mail-Link (Invite/Reset) – nutzt ?key=... */}
-            <Route path="/invite/password" element={<PasswordInvitePage />} />
-            {/* Optionaler Alias für „normale“ Reset-Links */}
-            <Route path="/reset/password" element={<PasswordInvitePage />} />
+            <Route path="/invite/:uid/:token" element={<PasswordInvitePage mode="invite" />} />
+            <Route path="/reset/:uid/:token" element={<PasswordInvitePage mode="reset" />} />
 
             {/* Profil / Onboarding */}
             <Route path="/account" element={<AccountPage />} />

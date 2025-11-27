@@ -1,30 +1,47 @@
 // src/auth/pages/PasswordInvitePage.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Typography } from '@mui/material';
 import { NarrowPage } from '../../components/layout/PageLayout';
 import PasswordSetForm from '../components/PasswordSetForm';
-import { resetPasswordWithKey } from '../authApi';
+import { authApi } from '../authApi';
 
 const PasswordInvitePage = () => {
-  const [searchParams] = useSearchParams();
+  const { uid, token } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-
-  const key = searchParams.get('key');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [checked, setChecked] = useState(false);
+
+  // Optional: andere Texte je nach „invite“ vs „reset“
+  const isInvite = location.pathname.startsWith('/invite/');
 
   useEffect(() => {
-    if (!key) {
-      setError('This link is invalid or missing the key parameter.');
+    if (!uid || !token) {
+      setError('This link is invalid.');
+      setChecked(true);
+      return;
     }
-  }, [key]);
+
+    const check = async () => {
+      try {
+        await authApi.verifyResetToken(uid, token);
+        setChecked(true);
+      } catch (err) {
+        setError('This link is invalid or has expired.');
+        setChecked(true);
+      }
+    };
+
+    check();
+  }, [uid, token]);
 
   const handleSubmit = async (newPassword) => {
-    if (!key) {
+    if (!uid || !token) {
       setError('This link is invalid.');
       return;
     }
@@ -34,10 +51,12 @@ const PasswordInvitePage = () => {
     setSuccessMessage('');
 
     try {
-      await resetPasswordWithKey(key, newPassword);
-      setSuccessMessage('Password set successfully. You can now log in.');
-
-      // Optional: direkt nach Login umleiten
+      await authApi.setNewPassword(uid, token, newPassword);
+      setSuccessMessage(
+        isInvite
+          ? 'Password set successfully. You can now log in.'
+          : 'Password changed successfully. You can now log in.',
+      );
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Could not set password.');
@@ -46,10 +65,22 @@ const PasswordInvitePage = () => {
     }
   };
 
+  if (!checked && !error) {
+    return (
+      <NarrowPage title="Checking link…">
+        <Typography>Validating your link…</Typography>
+      </NarrowPage>
+    );
+  }
+
   return (
     <NarrowPage
-      title="Welcome"
-      subtitle="Please choose a password to access your account."
+      title={isInvite ? 'Welcome' : 'Reset password'}
+      subtitle={
+        isInvite
+          ? 'Please choose a password to access your account.'
+          : 'Please choose a new password.'
+      }
     >
       <Helmet>
         <title>PROJECT_NAME – Set password</title>
@@ -67,10 +98,9 @@ const PasswordInvitePage = () => {
         </Typography>
       )}
 
-      <PasswordSetForm
-        onSubmit={handleSubmit}
-        submitting={submitting}
-      />
+      {!successMessage && !error && (
+        <PasswordSetForm onSubmit={handleSubmit} submitting={submitting} />
+      )}
     </NarrowPage>
   );
 };

@@ -74,7 +74,7 @@ export async function loginWithPassword(email, password) {
 export async function requestPasswordReset(email) {
   try {
     await axios.post(
-      `${HEADLESS_BASE}/auth/password/reset`,
+      `${USERS_BASE}/reset-request/`,
       { email },
       { withCredentials: true },
     );
@@ -177,16 +177,35 @@ export async function registerPasskey() {
   throw new Error('Passkey registration is not implemented yet.');
 }
 
+export async function verifyResetToken(uid, token) {
+  const res = await axios.get(
+    `${USERS_BASE}/password-reset/${uid}/${token}/`,
+    { withCredentials: true },
+  );
+  return res.data;
+}
+
+export async function setNewPassword(uid, token, newPassword) {
+  const res = await axios.post(
+    `${USERS_BASE}/password-reset/${uid}/${token}/`,
+    { new_password: newPassword },
+    { withCredentials: true },
+  );
+  return res.data;
+}
+
+
 export const authApi = {
   fetchCurrentUser,
   updateUserProfile,
   loginWithPassword,
   requestPasswordReset,
-  resetPasswordWithKey,
   changePassword,
   logoutSession,
   startSocialLogin,
   fetchHeadlessSession,
+  verifyResetToken,
+  setNewPassword,
   loginWithPasskey,
   registerPasskey,
 };
