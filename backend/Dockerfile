@@ -44,18 +44,25 @@ RUN apt-get update && apt-get install -y \
 
 ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
 
-# 1. Requirements kopieren
+# ---------------------------------------------------------------------------
+# OPTIMIZATION: Split COPY to enable Docker Layer Caching
+# ---------------------------------------------------------------------------
+
+# 1. Copy only files needed for pip install
 COPY backend/requirements.txt ./
 
-# 2. Python Dependencies installieren
-# WICHTIG: Da wir die "Injector"-Methode nutzen, müssen wir hier sicherstellen, 
-# dass der Ordner 'webapp-management' (falls vorhanden) VOR dem pip install kopiert wird,
-# falls er in requirements.txt referenziert wird.
-# ABER: Deine requirements.txt referenziert ./webapp-management.
-# Das bedeutet, dieser Ordner MUSS existieren, BEVOR pip läuft.
+# 2. Explicitly copy the injected library folder
+# Docker will check ONLY these files for changes. 
+# If you only changed app code (views.py), this step remains cached.
+COPY backend/webapp-management/ ./webapp-management/
 
-# KORREKTUR DER REIHENFOLGE FÜR INJECTOR-STRATEGIE:
-# Wir kopieren ALLES aus backend (inkl. requirements.txt UND webapp-management Ordner)
+# 3. Install dependencies (Cached unless requirements or webapp-management change)
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# ---------------------------------------------------------------------------
+
+# 4. Copy the rest of the application code
+# This layer will rebuild on every code change, but pip install is already done.
 COPY backend/ ./
 
 # JETZT installieren wir (Pip findet nun ./webapp-management lokal)
