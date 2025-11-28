@@ -88,4 +88,5 @@ java_backend/.gradle/
 java_backend/build/
 java_backend/gradle/*
 
+docker-compose.override.yml
 .env
