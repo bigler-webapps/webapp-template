@@ -89,6 +89,3 @@ java_backend/build/
 java_backend/gradle/*
 
 .env
-.env.local
-
-backend/webapp-management

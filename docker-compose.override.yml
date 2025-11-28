@@ -1,32 +1,20 @@
 services:
   backend:
     ports:
-      - "8125:8000"
+      - "${WEB_PORT}:8000"
     volumes:
       - ./backend/media:/app/backend/media
-      
-      # WICHTIG: Das hier ist dein "Live-Link".
-      # Es mountet den Ordner ../webapp-management über die kopierten Dateien im Container.
-      # Änderungen im Code sind sofort sichtbar, ohne Rebuild.
-      - ../webapp-management:/app/backend/webapp-management
-    
-    environment:
-      - ENV_TYPE=local
-      - TRAEFIK_ROUTER_RULE=Host(`localhost`)
-    
-    # Pip install im Editable Mode (-e), damit Python die Änderungen auch akzeptiert
-    command: >
-      sh -c "pip install -e ./webapp-management && 
-             daphne -b 0.0.0.0 -p 8000 project_template_app.asgi:application"
+    # keine extra environment: ENV_TYPE und TRAEFIK_ROUTER_RULE kommen aus .env
 
   db:
     ports:
-      - "5435:5432"
+      - "${DB_HOST_PORT}:5432"
 
 networks:
   proxy:
     external: false
-    name: project_template_local_proxy
+    # generischer Name, abgeleitet aus CONTAINER_NAME_PREFIX aus .env
+    name: ${CONTAINER_NAME_PREFIX}_local_proxy
 
 volumes:
   postgres_data:

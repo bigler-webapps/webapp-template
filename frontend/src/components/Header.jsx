@@ -3,7 +3,7 @@ import React, { useContext } from 'react';
 
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { AuthContext } from '@michabigler/ui-core';
+import { AuthContext } from '@micha.bigler/ui-core-micha';
 
 // Renders the main app header with navigation and auth actions
 const Header = () => {

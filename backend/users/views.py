@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 
-from django_core.invitations.mixins import InviteActionsMixin  # <- NEU
+from django_core_micha.invitations.mixins import InviteActionsMixin  # <- NEU
 from .serializers import UserSerializer
 
 import logging

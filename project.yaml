@@ -1,6 +1,5 @@
 project_name: "project_template"
 container_prefix: "template" # Used for Docker container names (e.g., template_backend)
-root_module: "project_template_app"
 
 environments:
   production:
@@ -28,3 +27,5 @@ environments:
       DB_PORT: "5432"
       DEBUG: "True"
       DJANGO_SECRET_KEY: "local-dev-secret-key"
+      WEB_PORT: "8126"
+      DB_HOST_PORT: "5436"

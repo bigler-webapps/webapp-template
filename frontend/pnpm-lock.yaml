@@ -29,9 +29,9 @@ importers:
       '@fontsource/roboto':
         specifier: ^5.2.8
         version: 5.2.9
-      '@micha/ui-core':
-        specifier: link:../../webapp-management/src/ui_core
-        version: link:../../webapp-management/src/ui_core
+      '@micha.bigler/ui-core-micha':
+        specifier: 1.0.1
+        version: 1.0.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@mui/material@7.3.5(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(axios@1.13.2)(react-dom@19.2.0(react@19.2.0))(react-helmet@6.1.0(react@19.2.0))(react-router-dom@6.30.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@mui/icons-material':
         specifier: ^7.3.5
         version: 7.3.5(@mui/material@7.3.5(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@types/react@19.2.6)(react@19.2.0)
@@ -1086,6 +1086,18 @@ packages:
 
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
+
+  '@micha.bigler/ui-core-micha@1.0.1':
+    resolution: {integrity: sha512-3KbnBzbc6IQTgSIk7xYoXadOH3yK0SUPJUTyWU7WJd4cPPCctThMaU2nicvxMPD97O23ch7IG7Xd7g6fZ01rHg==}
+    peerDependencies:
+      '@emotion/react': ^11.0.0
+      '@emotion/styled': ^11.0.0
+      '@mui/material': ^7.3.5
+      axios: ^1.0.0
+      react: ^18.0.0
+      react-dom: ^18.0.0
+      react-helmet: ^6.0.0
+      react-router-dom: ^6.0.0
 
   '@mui/core-downloads-tracker@7.3.5':
     resolution: {integrity: sha512-kOLwlcDPnVz2QMhiBv0OQ8le8hTCqKM9cRXlfVPL91l3RGeOsxrIhNRsUt3Xb8wb+pTVUolW+JXKym93vRKxCw==}
@@ -7078,6 +7090,17 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@leichtgewicht/ip-codec@2.0.5': {}
+
+  '@micha.bigler/ui-core-micha@1.0.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@mui/material@7.3.5(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(axios@1.13.2)(react-dom@19.2.0(react@19.2.0))(react-helmet@6.1.0(react@19.2.0))(react-router-dom@6.30.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@emotion/react': 11.14.0(@types/react@19.2.6)(react@19.2.0)
+      '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0)
+      '@mui/material': 7.3.5(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      axios: 1.13.2
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      react-helmet: 6.1.0(react@19.2.0)
+      react-router-dom: 6.30.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
 
   '@mui/core-downloads-tracker@7.3.5': {}
 

@@ -4,10 +4,6 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-      secrets:
-        - npmrc         # <-- Build-Secret für den Dockerfile-Build
-      # args:           # <-- brauchst du mit dem Secret nicht mehr
-      #   PIP_TOKEN: ${PIP_TOKEN}
     container_name: ${CONTAINER_NAME_PREFIX}_backend
     env_file:
       - .env
@@ -68,6 +64,3 @@ volumes:
   media_volume:
     external: true
     name: ${MEDIA_VOLUME_NAME}
-secrets:
-  npmrc:
-    file: .npmrc.github

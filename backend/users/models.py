@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 # Import aus deiner Lib
-from django_core.auth.models import AbstractUserProfile 
+from django_core_micha.auth.models import AbstractUserProfile 
 
 User = get_user_model()
 

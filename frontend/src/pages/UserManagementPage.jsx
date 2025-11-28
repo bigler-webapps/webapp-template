@@ -19,7 +19,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Helmet } from 'react-helmet';
-import { WidePage } from '@michabigler/ui-core';
+import { WidePage } from '@micha.bigler/ui-core-micha';
 
 // Available user roles
 const roles = ['none', 'student', 'teacher', 'admin'];

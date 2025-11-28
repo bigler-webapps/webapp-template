@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from django_core.invitations.views import NonAuthenticatedPasswordResetView
+from django_core_micha.invitations.views import NonAuthenticatedPasswordResetView
 
 from .views import csrf_token_view, UserViewSet
 

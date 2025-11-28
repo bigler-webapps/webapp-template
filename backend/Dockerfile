@@ -1,32 +1,43 @@
+# syntax=docker/dockerfile:1.4
+
 # --- [1] Frontend build phase ---
-    # syntax=docker/dockerfile:1.4
 FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend_build
+
 WORKDIR /app
 
+# pnpm aktivieren
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Nur für die Installation notwendige Dateien kopieren (Cache-freundlich)
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
-RUN --mount=type=secret,id=npmrc,target=/root/.npmrc \
-    --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
-    pnpm install --prod --no-frozen-lockfile
+# Dependencies installieren (öffentliches npm, keine Secrets mehr)
+# Voraussetzung: pnpm-lock.yaml ist konsistent mit package.json
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install
 
+# Rest des Frontend-Codes
 COPY frontend/ ./
 
 ENV NODE_ENV=production
 
-RUN --mount=type=secret,id=npmrc,target=/root/.npmrc \
-    --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+# Build erzeugen
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm run build
 
-RUN ls -R build
+# Optional, nur zum Debuggen:
+# RUN ls -R build
+
 
 # --- [2] Python / Django phase ---
 FROM python:3.12-slim
 
 WORKDIR /app/backend
 
-# System dependencies (PostGIS, etc.)
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Systemabhängigkeiten
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
@@ -39,37 +50,26 @@ RUN apt-get update && apt-get install -y \
 
 ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
 
-# ---------------------------------------------------------------------------
-# OPTIMIZATION: Split COPY to enable Docker Layer Caching
-# ---------------------------------------------------------------------------
-
-# 1. Copy only files needed for pip install
+# 1. Nur requirements kopieren (für Layer-Cache)
 COPY backend/requirements.txt ./
 
-# 2. Explicitly copy the injected library folder
-# Docker will check ONLY these files for changes. 
-# If you only changed app code (views.py), this step remains cached.
-COPY backend/webapp-management/ ./webapp-management/
+# 2. Python-Dependencies EINMAL installieren
+# WICHTIG: in requirements.txt muss jetzt z.B. stehen:
+#   django-core-micha==0.1.1
+# und KEIN "-e ./webapp-management" mehr.
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# 3. Install dependencies (Cached unless requirements or webapp-management change)
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# ---------------------------------------------------------------------------
-
-# 4. Copy the rest of the application code
-# This layer will rebuild on every code change, but pip install is already done.
+# 3. Restlichen Backend-Code kopieren
 COPY backend/ ./
 
-# JETZT installieren wir (Pip findet nun ./webapp-management lokal)
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# 4. Frontend-Build übernehmen
+COPY --from=frontend_build /app/build/static/ ./static/
+COPY --from=frontend_build /app/build/index.html ./templates/index.html
 
-# Copy built frontend into static and template folder from Stage 1
-COPY --from=frontend_build /app/build/static/ /app/backend/static/
-COPY --from=frontend_build /app/build/index.html /app/backend/templates/index.html
-
-
+# 5. Static Files sammeln
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "project_template_app.asgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "backend.asgi:application"]
