@@ -19,7 +19,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Helmet } from 'react-helmet';
-import { WidePage } from '../components/layout/PageLayout';
+import { WidePage } from 'webapp-management';
 
 // Available user roles
 const roles = ['none', 'student', 'teacher', 'admin'];

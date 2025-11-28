@@ -2,7 +2,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Typography, Box } from '@mui/material';
-import { WidePage } from '../components/layout/PageLayout';
+import { WidePage } from 'webapp-management';
 
 // Renders the main landing page of the application
 const Home = () => {

@@ -2,10 +2,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import ProfileComponent from '../auth/components/ProfileComponent';
+import ProfileComponent from 'webapp-management';
 import { Helmet } from 'react-helmet';
 import { Typography, Box } from '@mui/material';
-import { WidePage } from '../components/layout/PageLayout';
+import { WidePage } from 'webapp-management';
 
 // Renders onboarding page for new users to complete their profile
 const WelcomePage = () => {
