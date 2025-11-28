@@ -195,7 +195,7 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-SOCIALACCOUNT_ADAPTER = "users.adapters.InvitationOnlySocialAdapter"
+SOCIALACCOUNT_ADAPTER = "django_core.auth.adapters.InvitationOnlySocialAdapter"
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
