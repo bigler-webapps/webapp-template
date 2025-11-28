@@ -1,37 +1,34 @@
-# --- [1] Frontend build phase (React + pnpm) ---
+# --- [1] Frontend build phase ---
 FROM --platform=$BUILDPLATFORM node:24-alpine AS deps
 WORKDIR /app
 
-# Setup Node tools
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# 1. Copy Package Files
+# 1. Package Files holen
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
-# 2. INJECTION: Kopiere die Bibliothek, die wir per GitHub Action bereitgestellt haben
-# Wir kopieren sie in einen festen Ordner im Container, z.B. /app/lib_core
-# Hinweis: Pfad muss matchen mit dem, was wir im Repo haben (z.B. src/ui_core)
-COPY frontend/temp_lib_injection/src/ui_core ./lib_core
+# 2. INJECTION (Der Trick): 
+# Wir kopieren die Lib direkt in den 'src' Ordner des Containers!
+# Damit denkt Webpack später, es sei Teil des eigenen Source-Codes.
+COPY frontend/temp_lib_injection/src/react_lib ./src/webapp-management
 
-# 3. PATH REWRITE: Wir ändern den Pfad in package.json für den Docker-Build
-# Von: "file:../../webapp-management/src/ui_core" (Lokal)
-# Zu:  "file:./lib_core" (Docker Container)
-# Wir nutzen 'npm pkg set', das ist in Node integriert.
-RUN npm pkg set dependencies.webapp-management="file:./lib_core"
+# 3. PATH REWRITE
+# Wir zeigen auf den Ordner im src-Verzeichnis
+RUN npm pkg set dependencies.webapp-management="file:./src/webapp-management"
 
-# 4. Install Dependencies
-# WICHTIG: Da wir package.json geändert haben, stimmt der Lockfile-Hash nicht mehr.
-# --no-frozen-lockfile ist hier zwingend notwendig (hatten Sie aber schon).
+# 4. Install
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --prod --no-frozen-lockfile
 
 FROM deps AS frontend_build
 ENV NODE_ENV=production
 
-# Copy Frontend Source Code
+# 5. Copy Source Code
+# WICHTIG: Das kopiert dein lokales 'frontend/src' nach '/app/src'.
+# Da Docker Ordner mergt (und nicht löscht), bleibt 'src/webapp-management' erhalten!
 COPY frontend/ ./
 
-# Build React App
+# Build
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm run build
 
