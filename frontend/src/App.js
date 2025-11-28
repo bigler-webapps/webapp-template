@@ -20,7 +20,7 @@ import {
   PasswordResetRequestPage, 
   PasswordChangePage,
   PasswordInvitePage 
-} from 'webapp-management';
+} from './webapp-management';
 
 // --- Lokal verbliebene Seiten (Business Logic) ---
 import Home from './pages/Home';

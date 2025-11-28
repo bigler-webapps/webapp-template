@@ -7,14 +7,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # 1. Package Files holen
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
-# 2. INJECTION (Der Trick): 
-# Wir kopieren die Lib direkt in den 'src' Ordner des Containers!
-# Damit denkt Webpack später, es sei Teil des eigenen Source-Codes.
-COPY frontend/temp_lib_injection/src/ui_core ./src/webapp-management
 
-# 3. PATH REWRITE
-# Wir zeigen auf den Ordner im src-Verzeichnis
-RUN npm pkg set dependencies.webapp-management="file:./src/webapp-management"
 
 # 4. Install
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
