@@ -10,7 +10,7 @@ COPY frontend/package.json frontend/pnpm-lock.yaml ./
 # 2. INJECTION (Der Trick): 
 # Wir kopieren die Lib direkt in den 'src' Ordner des Containers!
 # Damit denkt Webpack später, es sei Teil des eigenen Source-Codes.
-COPY frontend/temp_lib_injection/src/react_lib ./src/webapp-management
+COPY frontend/temp_lib_injection/src/ui_core ./src/webapp-management
 
 # 3. PATH REWRITE
 # Wir zeigen auf den Ordner im src-Verzeichnis
