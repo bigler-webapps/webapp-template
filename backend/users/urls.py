@@ -1,19 +1,16 @@
+# users/urls.py
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from django_core_micha.invitations.views import NonAuthenticatedPasswordResetView
 
-from .views import csrf_token_view, UserViewSet
+from .views import UserViewSet  # your ViewSet using InviteActionsMixin, etc.
+# from .views import AccessCodeViewSet  # optional, if AccessCode stays in project
 
 router = DefaultRouter()
 router.register(r"", UserViewSet, basename="user")
 
+# Optional: if AccessCodeViewSet stays in the project instead of the lib
+# router.register(r"access-codes", AccessCodeViewSet, basename="access-code")
+
 urlpatterns = [
-    path("csrf/", csrf_token_view, name="csrf"),
-    # API-Endpunkt, den verifyResetToken / setNewPassword nutzen:
-    path(
-        "password-reset/<uidb64>/<token>/",
-        NonAuthenticatedPasswordResetView.as_view(),
-        name="password-reset-api",
-    ),
     path("", include(router.urls)),
 ]

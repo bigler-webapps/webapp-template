@@ -19,7 +19,8 @@ import {
   AccountPage,
   PasswordResetRequestPage, 
   PasswordChangePage,
-  PasswordInvitePage 
+  PasswordInvitePage,
+  SignUpPage 
 } from '@micha.bigler/ui-core-micha';
 
 // --- Lokal verbliebene Seiten (Business Logic) ---
@@ -93,6 +94,7 @@ function App() {
               path="/reset/:uid/:token" 
               element={<PasswordInvitePage mode="reset" />} 
             />
+            <Route path="/signup" element={<SignUpPage />} />
 
           </Routes>
         </Router>

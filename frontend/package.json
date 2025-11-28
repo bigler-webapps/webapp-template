@@ -22,7 +22,7 @@
     "react-router-dom": "^6.30.2",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
-    "@micha.bigler/ui-core-micha": "1.0.1"
+    "@micha.bigler/ui-core-micha": "1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

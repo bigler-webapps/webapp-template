@@ -30,5 +30,12 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
 
+
+ACCESS_CODE_REGISTRATION_ENABLED = True  # oder False
+
+# Welche Rollen dürfen Codes verwalten (neben superuser/staff)?
+ACCESS_CODE_ADMIN_ROLES = ("admin", "supervisor")
+
+
 # Platz für projektspezifische Overrides bei Bedarf
 # z.B. andere TIME_ZONE, zusätzliche LOGGING-Einträge, etc.
