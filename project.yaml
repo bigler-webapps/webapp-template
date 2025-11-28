@@ -27,5 +27,5 @@ environments:
       DB_PORT: "5432"
       DEBUG: "True"
       DJANGO_SECRET_KEY: "local-dev-secret-key"
-      WEB_PORT: "8126"
-      DB_HOST_PORT: "5436"
+      WEB_PORT: "8125"
+      DB_HOST_PORT: "5435"

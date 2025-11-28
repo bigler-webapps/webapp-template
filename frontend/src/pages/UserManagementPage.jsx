@@ -6,7 +6,7 @@ import { WidePage, AccessCodeManager } from '@micha.bigler/ui-core-micha';
 
 // Diese beiden Komponenten bleiben in deiner App
 import UserListTab from '../components/Users/UserListTab';
-import InviteUserTab from '../components/Users/UserInviteTab';
+import UserInviteTab from '../components/Users/UserInviteTab';
 
 const UserManagementPage = () => {
   const [tab, setTab] = useState('list');

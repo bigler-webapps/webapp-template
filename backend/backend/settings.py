@@ -1,7 +1,7 @@
 # backend/settings.py
 
 from pathlib import Path
-from django_core_micha.settings_base import *
+from django_core_micha.settings.settings_base import *
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
