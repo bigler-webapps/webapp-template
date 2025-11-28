@@ -4,6 +4,10 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      secrets:
+        - npmrc         # <-- Build-Secret für den Dockerfile-Build
+      # args:           # <-- brauchst du mit dem Secret nicht mehr
+      #   PIP_TOKEN: ${PIP_TOKEN}
     container_name: ${CONTAINER_NAME_PREFIX}_backend
     env_file:
       - .env
@@ -17,8 +21,10 @@ services:
     networks:
       - app-network
       - proxy
-    
-    # Standard Traefik Labels
+    # HIER KEINE Map mehr, entweder gar kein secrets: oder als Liste:
+    # secrets:
+    #   - npmrc        # nur nötig, wenn du das Secret im laufenden Container brauchst
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.${ROUTER_NAME}.rule=${TRAEFIK_ROUTER_RULE}"
@@ -62,3 +68,6 @@ volumes:
   media_volume:
     external: true
     name: ${MEDIA_VOLUME_NAME}
+secrets:
+  npmrc:
+    file: .npmrc.github

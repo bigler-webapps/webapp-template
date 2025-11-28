@@ -27,3 +27,4 @@ environments:
       DB_HOST: "db"
       DB_PORT: "5432"
       DEBUG: "True"
+      DJANGO_SECRET_KEY: "local-dev-secret-key"

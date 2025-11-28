@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@micha/ui-core': link:../../webapp-management/src/ui_core
+
 importers:
 
   .:
@@ -26,6 +29,9 @@ importers:
       '@fontsource/roboto':
         specifier: ^5.2.8
         version: 5.2.9
+      '@micha/ui-core':
+        specifier: link:../../webapp-management/src/ui_core
+        version: link:../../webapp-management/src/ui_core
       '@mui/icons-material':
         specifier: ^7.3.5
         version: 7.3.5(@mui/material@7.3.5(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@types/react@19.2.6)(react@19.2.0)

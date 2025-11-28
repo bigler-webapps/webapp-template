@@ -1,0 +1,2 @@
+overrides:
+  '@micha/ui-core': link:../../webapp-management/src/ui_core

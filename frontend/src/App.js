@@ -20,7 +20,7 @@ import {
   PasswordResetRequestPage, 
   PasswordChangePage,
   PasswordInvitePage 
-} from './webapp-management';
+} from '@michabigler/ui-core';
 
 // --- Lokal verbliebene Seiten (Business Logic) ---
 import Home from './pages/Home';

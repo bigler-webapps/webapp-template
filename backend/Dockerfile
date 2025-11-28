@@ -1,29 +1,25 @@
 # --- [1] Frontend build phase ---
-FROM --platform=$BUILDPLATFORM node:24-alpine AS deps
+    # syntax=docker/dockerfile:1.4
+FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend_build
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# 1. Package Files holen
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
-
-
-# 4. Install
-RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc \
+    --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --prod --no-frozen-lockfile
 
-FROM deps AS frontend_build
-ENV NODE_ENV=production
-
-# 5. Copy Source Code
-# WICHTIG: Das kopiert dein lokales 'frontend/src' nach '/app/src'.
-# Da Docker Ordner mergt (und nicht löscht), bleibt 'src/webapp-management' erhalten!
 COPY frontend/ ./
 
-# Build
-RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+ENV NODE_ENV=production
+
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc \
+    --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm run build
+
+RUN ls -R build
 
 # --- [2] Python / Django phase ---
 FROM python:3.12-slim
@@ -70,6 +66,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy built frontend into static and template folder from Stage 1
 COPY --from=frontend_build /app/build/static/ /app/backend/static/
 COPY --from=frontend_build /app/build/index.html /app/backend/templates/index.html
+
 
 RUN python manage.py collectstatic --noinput
 
