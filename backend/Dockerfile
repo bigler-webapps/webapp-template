@@ -1,73 +1,88 @@
 # syntax=docker/dockerfile:1.4
 
-# --- [1] Frontend build phase ---
+# --- Stage 1: Frontend Build ---
 FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend_build
 
 WORKDIR /app
 
-# pnpm aktivieren
+ARG VITE_APP_MUI_LICENSE_KEY
+ENV VITE_APP_MUI_LICENSE_KEY=$VITE_APP_MUI_LICENSE_KEY
+
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Nur für die Installation notwendige Dateien kopieren (Cache-freundlich)
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
-
-# Dependencies installieren (öffentliches npm, keine Secrets mehr)
-# Voraussetzung: pnpm-lock.yaml ist konsistent mit package.json
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install
 
-# Rest des Frontend-Codes
 COPY frontend/ ./
-
 ENV NODE_ENV=production
-
-# Build erzeugen
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm run build
 
-# Optional, nur zum Debuggen:
-# RUN ls -R build
 
-
-# --- [2] Python / Django phase ---
+# --- Stage 2: Python / Django ---
 FROM python:3.12-slim
 
-WORKDIR /app/backend
+RUN rm -f /etc/apt/apt.conf.d/docker-clean; \
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Systemabhängigkeiten
-RUN apt-get update && apt-get install -y \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     netcat-openbsd \
+    gettext \
     gdal-bin \
     libgdal-dev \
     libproj-dev \
     libgeos-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libffi-dev \
+    libraqm0 \
+    libcairo2-dev \
+    python3-cffi \
+    python3-brotli \
+    libpangoft2-1.0-0 \
+    libopenjp2-7 \
+    fonts-liberation \
+    fontconfig \
+    fonts-dejavu \
+    procps \
+    curl
 
-ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# 1. Nur requirements kopieren (für Layer-Cache)
+RUN export GDAL_LIBRARY_PATH=$(find /usr/lib -name libgdal.so | head -n 1) && \
+    echo "GDAL_LIBRARY_PATH=${GDAL_LIBRARY_PATH}" >> /etc/environment
+
+RUN addgroup --system --gid 1000 deploy && \
+    adduser --system --uid 1000 --ingroup deploy --home /app deploy
+
+WORKDIR /app/backend
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+ENV UV_SYSTEM_PYTHON=1
+
 COPY backend/requirements.txt ./
 
-# 2. Python-Dependencies EINMAL installieren
-# WICHTIG: in requirements.txt muss jetzt z.B. stehen:
-#   django-core-micha==0.1.1
-# und KEIN "-e ./webapp-management" mehr.
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+ARG UV_FLAGS=""
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install ${UV_FLAGS} -r requirements.txt
 
-# 3. Restlichen Backend-Code kopieren
-COPY backend/ ./
+COPY --chown=deploy:deploy backend/ ./
+COPY --chown=deploy:deploy --from=frontend_build /app/build/static/ ./static/
+COPY --chown=deploy:deploy --from=frontend_build /app/build/index.html ./templates/index.html
 
-# 4. Frontend-Build übernehmen
-COPY --from=frontend_build /app/build/static/ ./static/
-COPY --from=frontend_build /app/build/index.html ./templates/index.html
+RUN mkdir -p media static staticfiles && chown -R deploy:deploy media static staticfiles
 
-# 5. Static Files sammeln
+USER deploy
+
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000

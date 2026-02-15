@@ -15,27 +15,6 @@ const Home = () => {
       <Typography paragraph>
         This is the home page of the application.
       </Typography>
-
-      <Box
-        mt={4}
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        <Box
-          component="img"
-          // gerne erstmal absolut, um Base-URL-Probleme auszuschliessen
-          src="http://127.0.0.1:8125/media/Activity_Line.png"
-          alt="Activity line test"
-          sx={{
-            width: 300,        // feste Breite, damit es nicht „wegschrumpft“
-            height: 'auto',
-            borderRadius: 1,
-            border: '1px solid #ccc',
-          }}
-        />
-      </Box>
     </WidePage>
   );
 };

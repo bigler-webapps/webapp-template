@@ -1,0 +1,29 @@
+services:
+  backend:
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/static
+      - /app/backend/templates
+      - /app/backend/staticfiles
+      - ./backend/media:/app/backend/media
+    environment:
+      - ENV_TYPE=local
+    env_file:
+      - .env
+
+  db:
+    ports:
+      - "${DB_HOST_PORT:-5432}:5432"
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --loglevel warning
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+
+networks:
+  proxy:
+    external: false
+    name: project_template_local_proxy

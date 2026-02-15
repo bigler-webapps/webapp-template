@@ -1,13 +1,13 @@
 project_name: "project_template"
-container_prefix: "template" # Used for Docker container names (e.g., template_backend)
+container_prefix: "template"
+image_name: "ghcr.io/ihr-user/project-template-backend"
 
 environments:
   production:
     domains:
       - "template.bigler-consult.ch"
-    # Defines if this environment runs with HTTPS/Traefik
-    use_traefik: true 
-  
+    use_traefik: true
+
   staging:
     domains:
       - "template.sys.bigler-consult.ch"
@@ -18,14 +18,7 @@ environments:
       - "localhost"
       - "127.0.0.1"
     use_traefik: false
-    # Local defaults to avoid needing a secrets file for dev
-    defaults:
-      DB_USER: "qrqueue"
-      DB_PASSWORD: "qrqueue"
-      DB_NAME: "db_template"
-      DB_HOST: "db"
-      DB_PORT: "5432"
-      DEBUG: "True"
-      DJANGO_SECRET_KEY: "local-dev-secret-key"
-      WEB_PORT: "8125"
-      DB_HOST_PORT: "5435"
+    web_port: 8027
+    frontend_port: 5127
+    db_port: 5427
+    redis_port: 6327

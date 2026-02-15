@@ -35,6 +35,7 @@ ACCESS_CODE_REGISTRATION_ENABLED = True  # oder False
 
 # Welche Rollen dürfen Codes verwalten (neben superuser/staff)?
 ACCESS_CODE_ADMIN_ROLES = ("admin", "supervisor")
+INVITE_ADMIN_ROLES = ("admin", "supervisor")
 
 
 # Platz für projektspezifische Overrides bei Bedarf
