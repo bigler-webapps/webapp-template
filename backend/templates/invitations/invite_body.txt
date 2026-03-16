@@ -1,10 +1,10 @@
-Hallo{% if user.first_name %} {{ user.first_name }}{% endif %},
+{% load i18n %}
+{% trans "Hello" %}{% if user.first_name %} {{ user.first_name }}{% endif %},
 
-wir möchten dich auf unsere neue Webseite einladen.
+{% trans "You have been invited to Project Template App." %}
 
-Bitte setze dein Passwort über folgenden Link:
+{% trans "Please set your password using the following link:" %}
 
 {{ url }}
 
-Liebe Grüsse
-Micha
+{% trans "Best regards" %}

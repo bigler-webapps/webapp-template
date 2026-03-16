@@ -1,1 +1,1 @@
-Willkommen bei der JG FEG Bern
+{% load i18n %}{% trans "Welcome to Project Template App" %}

@@ -1,10 +1,10 @@
-Hallo{% if user.first_name %} {{ user.first_name }}{% endif %},
+{% load i18n %}
+{% trans "Hello" %}{% if user.first_name %} {{ user.first_name }}{% endif %},
 
-du kannst dein Passwort über folgenden Link zurücksetzen:
+{% trans "You can reset your password using the following link:" %}
 
 {{ url }}
 
-Wenn du diese Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren.
+{% trans "If you did not request this email, you can safely ignore it." %}
 
-Liebe Grüsse
-Micha
+{% trans "Best regards" %}

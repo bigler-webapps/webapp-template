@@ -18,8 +18,7 @@ import {
   Button,
 } from '@mui/material';
 
-// App-spezifische Rollen
-const roles = ['none', 'student', 'teacher', 'admin'];
+const roles = ['none', 'collaborator', 'supervisor', 'admin'];
 
 const UserListTab = () => {
   const [allUsers, setAllUsers] = useState([]);
@@ -104,9 +103,9 @@ const UserListTab = () => {
       return true;
     }
 
-    if (currentRole === 'teacher') {
+    if (currentRole === 'supervisor') {
       if (rowUser.id === currentUser.id) return false;
-      if (['teacher', 'admin'].includes(rowUserRole)) return false;
+      if (['supervisor', 'admin'].includes(rowUserRole)) return false;
       return true;
     }
 

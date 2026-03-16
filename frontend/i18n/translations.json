@@ -1,0 +1,102 @@
+{
+  "App.NAME": {
+    "de": "Project Template App",
+    "en": "Project Template App",
+    "fr": "Project Template App"
+  },
+  "Header.HOME": {
+    "de": "Start",
+    "en": "Home",
+    "fr": "Accueil"
+  },
+  "Header.WELCOME": {
+    "de": "Willkommen",
+    "en": "Welcome",
+    "fr": "Bienvenue"
+  },
+  "Header.ACCOUNT": {
+    "de": "Konto",
+    "en": "Account",
+    "fr": "Compte"
+  },
+  "Header.LOGIN": {
+    "de": "Anmelden",
+    "en": "Login",
+    "fr": "Connexion"
+  },
+  "Header.LOGOUT": {
+    "de": "Abmelden",
+    "en": "Logout",
+    "fr": "Déconnexion"
+  },
+  "Header.LANGUAGE": {
+    "de": "Sprache",
+    "en": "Language",
+    "fr": "Langue"
+  },
+  "Home.PAGE_TITLE": {
+    "de": "Project Template App",
+    "en": "Project Template App",
+    "fr": "Project Template App"
+  },
+  "Home.TITLE": {
+    "de": "Aktuelles Template auf modernem Stack",
+    "en": "Current template on the modern stack",
+    "fr": "Template actuel sur une pile moderne"
+  },
+  "Home.DESCRIPTION": {
+    "de": "Dieses Projekt startet mit aktuellem Django-Core, moderner Authentifizierung, Mehrsprachigkeit und einer aktuellen React-App-Shell.",
+    "en": "This project starts with current Django core patterns, modern authentication, multilingual support, and an up-to-date React app shell.",
+    "fr": "Ce projet démarre avec les patterns Django actuels, une authentification moderne, le multilinguisme et une app shell React à jour."
+  },
+  "Home.LOGGED_IN": {
+    "de": "Du bist angemeldet und kannst direkt in dein Konto wechseln.",
+    "en": "You are signed in and can jump straight into your account.",
+    "fr": "Vous êtes connecté et pouvez accéder directement à votre compte."
+  },
+  "Home.NEW_USER_HINT": {
+    "de": "Beende zuerst dein Profil und bestätige die Richtlinien.",
+    "en": "Finish your profile and confirm the policies first.",
+    "fr": "Complétez d'abord votre profil et confirmez les politiques."
+  },
+  "Home.ACCOUNT_CTA": {
+    "de": "Zum Konto",
+    "en": "Open account",
+    "fr": "Ouvrir le compte"
+  },
+  "Home.WELCOME_CTA": {
+    "de": "Onboarding fortsetzen",
+    "en": "Continue onboarding",
+    "fr": "Continuer l'accueil"
+  },
+  "Home.LOGIN_CTA": {
+    "de": "Zum Login",
+    "en": "Go to login",
+    "fr": "Aller à la connexion"
+  },
+  "Home.SIGNUP_CTA": {
+    "de": "Registrieren",
+    "en": "Sign up",
+    "fr": "S'inscrire"
+  },
+  "Welcome.PAGE_TITLE": {
+    "de": "Willkommen bei Project Template App",
+    "en": "Welcome to Project Template App",
+    "fr": "Bienvenue sur Project Template App"
+  },
+  "Welcome.TITLE": {
+    "de": "Willkommen",
+    "en": "Welcome",
+    "fr": "Bienvenue"
+  },
+  "Welcome.DESCRIPTION": {
+    "de": "Vervollständige dein Profil und bestätige die Hinweise, damit dein Konto vollständig eingerichtet ist.",
+    "en": "Complete your profile and confirm the notices so your account setup is complete.",
+    "fr": "Complétez votre profil et confirmez les informations afin que votre compte soit entièrement configuré."
+  },
+  "Welcome.CONTINUE": {
+    "de": "Weiter",
+    "en": "Continue",
+    "fr": "Continuer"
+  }
+}

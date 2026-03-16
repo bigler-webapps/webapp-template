@@ -1,2 +1,2 @@
 overrides:
-  '@micha/ui-core': link:../../webapp-management/src/ui_core
+  "@micha.bigler/ui-core-micha": link:../../webapp-management/src/ui_core_micha

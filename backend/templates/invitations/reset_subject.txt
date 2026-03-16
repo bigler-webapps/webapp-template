@@ -1,1 +1,1 @@
-Passwort zurücksetzen
+{% load i18n %}{% trans "Reset password" %}

@@ -1,0 +1,31 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgid "Please upload a .md file."
+msgstr "Veuillez téléverser un fichier .md."
+
+msgid "Welcome to Project Template App"
+msgstr "Bienvenue sur Project Template App"
+
+msgid "Hello"
+msgstr "Bonjour"
+
+msgid "You have been invited to Project Template App."
+msgstr "Vous avez été invité sur Project Template App."
+
+msgid "Please set your password using the following link:"
+msgstr "Veuillez définir votre mot de passe en utilisant le lien suivant :"
+
+msgid "Best regards"
+msgstr "Meilleures salutations"
+
+msgid "Reset password"
+msgstr "Réinitialiser le mot de passe"
+
+msgid "You can reset your password using the following link:"
+msgstr "Vous pouvez réinitialiser votre mot de passe en utilisant le lien suivant :"
+
+msgid "If you did not request this email, you can safely ignore it."
+msgstr "Si vous n'avez pas demandé cet e-mail, vous pouvez l'ignorer."
