@@ -1,11 +1,11 @@
 name: Deploy App
 
 on:
-  # 1. Automatischer Trigger bei Tags
+  # Auto: push to develop → staging, push to main → production
   push:
-    tags: ['deploy-*']
+    branches: ['develop', 'main']
 
-  # 2. Manuelles Menü
+  # Manual
   workflow_dispatch:
     inputs:
       environment:
@@ -19,14 +19,7 @@ on:
 
 jobs:
   call-deploy:
-    # Verweis auf den zentralen Workflow (Version beachten!)
     uses: MichaBigler/webapp-management/.github/workflows/deploy-app.yml@main
-    
-    # Hier übergeben wir die Auswahl an den zentralen Workflow
     with:
-      # Logik: Wenn manuell (inputs vorhanden), nimm das. 
-      # Sonst (bei Tag-Push), nimm 'production'.
-      environment: ${{ inputs.environment || 'production' }}
-    
-    # Übergibt alle Secrets (SSH, DB, etc.) automatisch
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     secrets: inherit
