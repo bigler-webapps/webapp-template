@@ -18,8 +18,16 @@ on:
           - production
 
 jobs:
-  call-deploy:
-    uses: MichaBigler/webapp-management/.github/workflows/deploy-app.yml@main
-    with:
-      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    secrets: inherit
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@main
+        with:
+          environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+          ssh_host: ${{ secrets.SSH_HOST }}
+          ssh_user: ${{ secrets.SSH_USER }}
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          secrets_context_json: ${{ toJson(secrets) }}
