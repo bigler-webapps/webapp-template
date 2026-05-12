@@ -26,4 +26,4 @@ services:
 networks:
   proxy:
     external: false
-    name: project_template_local_proxy
+    name: app_local_proxy

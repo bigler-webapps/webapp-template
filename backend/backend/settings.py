@@ -99,7 +99,7 @@ AUTH_METHODS = {
     "mfa_recovery_codes": True,
 }
 
-LOGGING["loggers"]["project_template"] = {  # noqa: F405
+LOGGING["loggers"]["app"] = {  # noqa: F405
     "handlers": ["console"],
     "level": "DEBUG" if DEBUG else "INFO",  # noqa: F405
 }

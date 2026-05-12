@@ -1,4 +1,6 @@
-# Agent Memory — project_template_app
+# Agent Memory — webapp-template
+
+> This is a template repo. Rename this heading after "Use this template".
 
 ## Discoveries
 <!-- Non-obvious findings about this codebase. Agents write here autonomously. -->

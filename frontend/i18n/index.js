@@ -5,7 +5,7 @@ import { authTranslations } from "@micha.bigler/ui-core-micha";
 
 import translations from "./translations.json";
 
-const LANGUAGE_STORAGE_KEY = "project-template.language";
+const LANGUAGE_STORAGE_KEY = "app.language";
 
 const mergedTranslations = {
   ...translations,
@@ -49,8 +49,8 @@ i18n.use(initReactI18next).init({
   nsSeparator: false,
 });
 
-if (!i18n.__project_template_language_listener_attached__) {
-  i18n.__project_template_language_listener_attached__ = true;
+if (!i18n.__app_language_listener_attached__) {
+  i18n.__app_language_listener_attached__ = true;
   i18n.on("languageChanged", (language) => {
     try {
       if (typeof language === "string" && language.length > 0) {

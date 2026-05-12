@@ -1,16 +1,23 @@
-project_name: "project_template"
-container_prefix: "template"
-image_name: "ghcr.io/ihr-user/project-template-backend"
+# Project config — REPLACE PLACEHOLDERS after "Use this template"
+#
+# Required:
+#   - project_name: short slug, used in container/volume names
+#   - container_prefix: prefix for container names (e.g. "myapp" → myapp_backend_1)
+#   - image_name: full image path for ghcr.io or other registry
+
+project_name: "<your-app-slug>"             # e.g. "kerzenziehen", "jg-ferien"
+container_prefix: "<your-prefix>"           # e.g. "kz", "jg"
+image_name: "ghcr.io/<your-org>/<your-app>-backend"
 
 environments:
   production:
     domains:
-      - "template.bigler-consult.ch"
+      - "<your-domain.example.com>"
     use_traefik: true
 
   staging:
     domains:
-      - "template.sys.bigler-consult.ch"
+      - "<your-staging-domain.example.com>"
     use_traefik: true
 
   local:
@@ -18,6 +25,7 @@ environments:
       - "localhost"
       - "127.0.0.1"
     use_traefik: false
+    # Pick port numbers that don't collide with other local apps you run.
     web_port: 8027
     frontend_port: 5127
     db_port: 5427

@@ -1,4 +1,7 @@
-# project_template_app Context
+# webapp-template Context
+
+> This is a template repo. After "Use this template", rename this heading
+> and document your app's context here.
 
 ## Data Models
 <!-- Document key models and their relationships -->
