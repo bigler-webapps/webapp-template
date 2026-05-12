@@ -1,0 +1,22 @@
+services:
+  backend:
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - app-network
+    ports: []
+    restart: "no"
+    volumes:
+      - ./backend:/app/backend
+
+  db:
+    ports: []
+    restart: "no"
+
+  redis:
+    ports: []
+    restart: "no"
+
+networks:
+  proxy:
+    external: false

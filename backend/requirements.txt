@@ -1,22 +1,39 @@
+# Core platform library — pin to a major version
+django-core-micha>=2.4,<3.0
+
+# Django stack
 Django>=5.0,<6.0
 djangorestframework>=3.15
 django-cors-headers>=4.3
 channels>=4.0
 channels-redis>=4.2
-psycopg2-binary>=2.9
-python-dotenv>=1.0
-gunicorn>=22.0
 daphne>=4.0
 whitenoise>=6.0
+gunicorn>=22.0
+
+# Database
+psycopg2-binary>=2.9
+
+# Auth
 django-allauth[mfa]
+
+# Config / env
+django-environ
+python-dotenv>=1.0
+PyYAML>=6.0
+django-crontab
+
+# Background tasks
+celery
+redis
+
+# HTTP / tokens
 requests>=2.31
 PyJWT[crypto]>=2.8.0
-PyYAML>=6.0
-django-environ
-django-crontab
-django-core-micha>=2.3.23
-Pillow
-reportlab
-xhtml2pdf==0.2.16
-WeasyPrint>=60.0
 
+# Files / images
+Pillow
+
+# Tests
+pytest
+pytest-django
