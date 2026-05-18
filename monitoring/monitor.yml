@@ -1,0 +1,20 @@
+# Uptime Kuma monitors for this app — config-as-code.
+#
+# Optional. If you adopt Uptime Kuma monitoring in your tenant:
+#   1. Declare one or more monitors below (one entry per URL to watch)
+#   2. Wire the register-kuma-monitors step in .github/workflows/main.yml
+#   3. Ensure KUMA_AUTOMATION_USER + KUMA_AUTOMATION_PASSWORD are set
+#      in your repo's GitHub Environment Secrets (via sync-secrets)
+#   4. Also add the hostname(s) to extra_hosts of the uptime-kuma service
+#      in your tenant's webapp-management/docker-compose.yml so Kuma can
+#      reach the host's public IP from inside Docker (hairpin-NAT workaround)
+#
+# Replace the example below with your app's actual URL(s).
+
+monitors:
+  - name: myapp-frontend
+    type: http
+    url: https://myapp.example.com
+    interval: 60
+    max_retries: 3
+    retry_interval: 60

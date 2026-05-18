@@ -31,3 +31,16 @@ jobs:
           ssh_user: ${{ secrets.SSH_USER }}
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           secrets_context_json: ${{ toJson(secrets) }}
+
+      # Optional: register Uptime Kuma monitors after every successful deploy.
+      # Remove this step (and monitoring/monitor.yml) if you don't use Kuma.
+      # See monitoring/monitor.yml for setup notes.
+      - uses: bigler-webapps/workflow-templates/.github/actions/register-kuma-monitors@main
+        if: success()
+        with:
+          config_path: monitoring/monitor.yml
+          ssh_host: ${{ secrets.SSH_HOST }}
+          ssh_user: ${{ secrets.SSH_USER }}
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          kuma_user: ${{ secrets.KUMA_AUTOMATION_USER }}
+          kuma_password: ${{ secrets.KUMA_AUTOMATION_PASSWORD }}
