@@ -39,8 +39,9 @@ jobs:
         if: success()
         with:
           config_path: monitoring/monitor.yml
-          ssh_host: ${{ secrets.SSH_HOST }}
-          ssh_user: ${{ secrets.SSH_USER }}
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Tunnel to the central Kuma host (not this app's deploy host).
+          ssh_host: ${{ secrets.KUMA_SSH_HOST }}
+          ssh_user: ${{ secrets.KUMA_SSH_USER }}
+          ssh_private_key: ${{ secrets.KUMA_SSH_PRIVATE_KEY }}
           kuma_user: ${{ secrets.KUMA_AUTOMATION_USER }}
           kuma_password: ${{ secrets.KUMA_AUTOMATION_PASSWORD }}
