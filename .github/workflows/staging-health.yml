@@ -7,4 +7,4 @@ on:
 
 jobs:
   staging-health:
-    uses: bigler-webapps/workflow-templates/.github/workflows/staging-health.yml@v1
+    uses: bigler-webapps/workflow-templates/.github/workflows/staging-health.yml@main

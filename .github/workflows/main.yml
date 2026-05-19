@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@v1
+      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@main
         with:
           environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
           ssh_host: ${{ secrets.SSH_HOST }}
@@ -38,7 +38,7 @@ jobs:
       # Optional: register Uptime Kuma monitors after every successful deploy.
       # Remove this step (and monitoring/monitor.yml) if you don't use Kuma.
       # See monitoring/monitor.yml for setup notes.
-      - uses: bigler-webapps/workflow-templates/.github/actions/register-kuma-monitors@v1
+      - uses: bigler-webapps/workflow-templates/.github/actions/register-kuma-monitors@main
         if: success()
         with:
           config_path: monitoring/monitor.yml
