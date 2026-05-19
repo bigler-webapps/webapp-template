@@ -1,6 +1,6 @@
 # Core platform library — exact pin so a buggy upstream release does not
 # auto-propagate. Bump explicitly per app via Renovate PR.
-django-core-micha==2.9.3
+django-core-micha==2.9.4
 
 # Django stack
 Django>=5.0,<6.0
