@@ -1,0 +1,11 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: bigler-webapps/workflow-templates/.github/workflows/app-ci.yml@v1
+    secrets: inherit

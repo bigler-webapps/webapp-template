@@ -18,3 +18,11 @@ monitors:
     interval: 60
     max_retries: 3
     retry_interval: 60
+
+  - name: myapp-healthz
+    type: http
+    url: https://myapp.example.com/api/healthz
+    interval: 60
+    max_retries: 3
+    retry_interval: 60
+    accepted_statuscodes: ["200-299"]

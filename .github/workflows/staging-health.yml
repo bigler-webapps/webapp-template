@@ -1,0 +1,10 @@
+name: Staging Health
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  staging-health:
+    uses: bigler-webapps/workflow-templates/.github/workflows/staging-health.yml@v1
