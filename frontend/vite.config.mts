@@ -8,6 +8,12 @@ const fromRoot = (...segments: string[]) => path.resolve(rootDir, ...segments);
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/setupTests.js',
+    css: false,
+  },
   server: {
     port: 5173,
     watch: {

@@ -8,9 +8,10 @@ WORKDIR /app
 ARG VITE_APP_MUI_LICENSE_KEY
 ENV VITE_APP_MUI_LICENSE_KEY=$VITE_APP_MUI_LICENSE_KEY
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Pin pnpm version to the one declared in frontend/package.json
+RUN corepack enable && corepack prepare pnpm@11.1.3 --activate
 
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml frontend/.npmrc ./
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install
 
@@ -21,7 +22,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 
 
 # --- Stage 2: Python / Django ---
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; \
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache

@@ -6,43 +6,41 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fontsource/dm-sans": "^5.2.8",
-    "@fontsource/montserrat": "^5.2.8",
-    "@fontsource/open-sans": "^5.2.7",
-    "@fontsource/roboto": "^5.2.8",
-    "@micha.bigler/ui-core-micha": "2.3.3",
-    "@mui/icons-material": "7.3.8",
-    "@mui/material": "7.3.8",
-    "@mui/system": "7.3.8",
+    "@micha.bigler/ui-core-micha": "2.4.0",
+    "@mui/icons-material": "^7.3.11",
+    "@mui/material": "^7.3.11",
+    "@mui/system": "^7.3.11",
     "@mui/x-data-grid": "^8.18.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "axios": "^1.13.2",
-    "i18next": "^25.6.3",
+    "i18next": "^26.2.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-helmet": "^6.1.0",
-    "react-i18next": "^16.3.5",
-    "react-router-dom": "^7.9.6",
-    "web-vitals": "^5.1.0"
+    "react-i18next": "^17.0.8",
+    "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
-    "@vitejs/plugin-react-swc": "^4.2.2",
-    "vite": "^7.2.7"
+    "@eslint/js": "^10.0.1",
+    "@vitejs/plugin-react-swc": "^4.3.1",
+    "eslint": "^10.4.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.6.0",
+    "jsdom": "^29.1.1",
+    "vite": "^8.0.13",
+    "vitest": "^4.1.6"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "echo \"no tests configured\" && exit 0"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "test": "vitest run",
+    "lint": "eslint ."
   },
   "browserslist": {
     "production": [
@@ -56,6 +54,5 @@
       "last 1 safari version"
     ]
   },
-  "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977"
+  "packageManager": "pnpm@11.1.3"
 }
-

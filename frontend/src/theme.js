@@ -1,9 +1,11 @@
 // src/theme.js
 import { createTheme } from '@mui/material/styles';
-import '@fontsource/montserrat';
-import '@fontsource/roboto';
-import '@fontsource/open-sans';
-import '@fontsource/dm-sans';
+// Only DM Sans is referenced in typography.fontFamily below. We import the
+// latin subset for weights 400/500/600. Add other fontsource packages here
+// if the app's theme picks them up.
+import '@fontsource/dm-sans/latin-400.css';
+import '@fontsource/dm-sans/latin-500.css';
+import '@fontsource/dm-sans/latin-600.css';
 
 // Global MUI theme used across the app
 const theme = createTheme({

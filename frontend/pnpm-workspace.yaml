@@ -1,2 +1,17 @@
-overrides:
-  "@micha.bigler/ui-core-micha": link:../../webapp-management/src/ui_core_micha
+# pnpm v11 policy file.
+#
+# allowBuilds: explicitly approve build scripts (replaces the pnpm v10
+# `pnpm.onlyBuiltDependencies` field that used to live in package.json).
+#   - @swc/core: native SWC binary used by @vitejs/plugin-react-swc
+#   - core-js: polyfill bootstrapper
+#   - esbuild: native bundler binary
+allowBuilds:
+  '@swc/core': true
+  'core-js': true
+  'esbuild': true
+
+# minimumReleaseAgeExclude: bypass the default ~1 day minimum-release-age
+# supply-chain guard for our own ui-core-micha publishes. Third-party packages
+# remain protected by the default policy.
+minimumReleaseAgeExclude:
+  - '@micha.bigler/ui-core-micha'

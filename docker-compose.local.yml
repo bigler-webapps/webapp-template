@@ -18,7 +18,7 @@ services:
       - "${DB_HOST_PORT:-5432}:5432"
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     command: redis-server --loglevel warning
     ports:
       - "${REDIS_HOST_PORT:-6379}:6379"
