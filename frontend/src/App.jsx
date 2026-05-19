@@ -7,6 +7,7 @@ import {
   PasswordInvitePage,
   PasswordResetRequestPage,
   SignUpPage,
+  SignupConfirmPage,
 } from "@micha.bigler/ui-core-micha";
 
 import Header from "./components/Header";
@@ -24,6 +25,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/signup/confirm" element={<SignupConfirmPage />} />
           <Route path="/reset-request-password" element={<PasswordResetRequestPage />} />
           <Route path="/invite/:uid/:token" element={<PasswordInvitePage />} />
           <Route path="/reset/:uid/:token" element={<PasswordInvitePage />} />
