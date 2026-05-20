@@ -10,7 +10,7 @@ channels>=4.3.2
 channels-redis>=4.3.0
 daphne>=4.2.1
 whitenoise>=6.12.0
-gunicorn>=22.0
+gunicorn>=26.0.0
 
 # Database
 psycopg2-binary>=2.9.12
