@@ -19,6 +19,11 @@ on:
 
 jobs:
   deploy:
+    # Skip deploy when this workflow runs on the template repo itself.
+    # The template has no real deploy target / no app behind it; the job
+    # would only fail and spam notifications. New repos created via
+    # "Use this template" have is_template=false → deploy runs normally.
+    if: ${{ ! github.event.repository.is_template }}
     runs-on: ubuntu-latest
     environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     concurrency:
