@@ -11,11 +11,13 @@ image_name: "ghcr.io/<your-org>/<your-app>-backend"
 
 environments:
   production:
+    server: main-prod
     domains:
       - "<your-domain.example.com>"
     use_traefik: true
 
   staging:
+    server: staging
     domains:
       - "<your-staging-domain.example.com>"
     use_traefik: true
