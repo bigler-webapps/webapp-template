@@ -23,9 +23,54 @@ services:
       - proxy
     labels:
       - "traefik.enable=${TRAEFIK_ENABLE:-false}"
+
+      # Main router: serves the full app behind sec-headers + body-limit-default.
+      # Platform middlewares (S6/S14/S35):
+      #   - `sec-headers@docker` is defined in webapp-management/docker-compose.yml
+      #     (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
+      #   - `body-limit-default@file` (2 MiB) is defined in
+      #     webapp-management/dynamic/middlewares.yml
+      # TLS via Cloudflare Origin Cert (terminated at Traefik) — `tls=true`
+      # is sufficient because cloudflared/Traefik sit behind CF's Universal SSL.
       - "traefik.http.routers.${ROUTER_NAME}.rule=${TRAEFIK_ROUTER_RULE}"
       - "traefik.http.routers.${ROUTER_NAME}.entrypoints=websecure"
-      - "traefik.http.routers.${ROUTER_NAME}.tls.certresolver=myresolver"
+      - "traefik.http.routers.${ROUTER_NAME}.tls=true"
+      - "traefik.http.routers.${ROUTER_NAME}.middlewares=sec-headers@docker,body-limit-default@file"
+
+      # Auth endpoints: brute-force-rate-limited on /accounts/* (allauth + dcm).
+      # Add per-app priority=100 so this wins over the main catch-all.
+      - "traefik.http.routers.${ROUTER_NAME}-accounts.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/accounts`)"
+      - "traefik.http.routers.${ROUTER_NAME}-accounts.entrypoints=websecure"
+      - "traefik.http.routers.${ROUTER_NAME}-accounts.tls=true"
+      - "traefik.http.routers.${ROUTER_NAME}-accounts.priority=100"
+      - "traefik.http.routers.${ROUTER_NAME}-accounts.middlewares=sec-headers@docker,auth-ratelimit@file,body-limit-default@file"
+      - "traefik.http.routers.${ROUTER_NAME}-accounts.service=${ROUTER_NAME}"
+
+      # Media default: force download + nosniff for /media/*. If your app uploads
+      # PDF/image attachments that need inline display, add a higher-priority
+      # subpath router using `media-inline@file` (see reimbursements pattern).
+      # If your app has NO /media uploads, remove this router and instead drop
+      # the media_volume + MEDIA_URL config entirely.
+      - "traefik.http.routers.${ROUTER_NAME}-media.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/media`)"
+      - "traefik.http.routers.${ROUTER_NAME}-media.entrypoints=websecure"
+      - "traefik.http.routers.${ROUTER_NAME}-media.tls=true"
+      - "traefik.http.routers.${ROUTER_NAME}-media.priority=100"
+      - "traefik.http.routers.${ROUTER_NAME}-media.middlewares=sec-headers@docker,media-safe-headers@file"
+      - "traefik.http.routers.${ROUTER_NAME}-media.service=${ROUTER_NAME}"
+
+      # Upload endpoints: increase body-limit + rate-limit specifically for
+      # known upload routes. Customise the PathPrefix/PathRegexp to your app's
+      # upload endpoints. If your app has no large uploads, remove this block.
+      # Reference patterns:
+      #   - jg-ferien zip-bulk: `Path('/api/.../zip-bulk-upload/')` + body-limit-large
+      #   - reimbursements claims: PathPrefix(/api/claims/attachments) + body-limit-upload
+      - "traefik.http.routers.${ROUTER_NAME}-upload.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/api/uploads`)"
+      - "traefik.http.routers.${ROUTER_NAME}-upload.entrypoints=websecure"
+      - "traefik.http.routers.${ROUTER_NAME}-upload.tls=true"
+      - "traefik.http.routers.${ROUTER_NAME}-upload.priority=100"
+      - "traefik.http.routers.${ROUTER_NAME}-upload.middlewares=sec-headers@docker,body-limit-upload@file,upload-ratelimit@file"
+      - "traefik.http.routers.${ROUTER_NAME}-upload.service=${ROUTER_NAME}"
+
       - "traefik.http.services.${ROUTER_NAME}.loadbalancer.server.port=8000"
     restart: unless-stopped
 

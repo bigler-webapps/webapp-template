@@ -18,8 +18,8 @@ importers:
         specifier: ^5.2.8
         version: 5.2.8
       '@micha.bigler/ui-core-micha':
-        specifier: 2.4.0
-        version: 2.4.0(34e18b240474c20f8804485157ecf642)
+        specifier: 2.4.3
+        version: 2.4.3(34e18b240474c20f8804485157ecf642)
       '@mui/icons-material':
         specifier: ^7.3.11
         version: 7.3.11(@mui/material@7.3.11(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/react@19.2.14)(react@19.2.6)
@@ -378,21 +378,21 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@micha.bigler/ui-core-micha@2.4.0':
-    resolution: {integrity: sha512-ncOxconZky1RJVQDAtctTMHr1NxF5Wnv84l6U386GLy11ylqonE2c4+6cizGB35nQZp21Ea7VoHlsUcokZyzGw==}
+  '@micha.bigler/ui-core-micha@2.4.3':
+    resolution: {integrity: sha512-L485ea4PkNKIZ4GZT4oX4J0KWysw/ai5XKn4FFveScJO2NcIO4NwIK0AWqY8/du/JpohCsgfKLvsnfCklNqGHA==}
     peerDependencies:
-      '@emotion/react': ^11.0.0
-      '@emotion/styled': ^11.0.0
-      '@mui/material': ^7.3.5
-      '@mui/x-data-grid': ^8.4.0
-      axios: ^1.0.0
+      '@emotion/react': ^11.14.0
+      '@emotion/styled': ^11.14.1
+      '@mui/material': ^7.3.11
+      '@mui/x-data-grid': ^8.28.6
+      axios: ^1.16.1
       i18next: ^25.10.10 || ^26.0.0
       qrcode.react: ^4.2.0
-      react: ^19.2.1
-      react-dom: ^19.2.1
-      react-helmet: ^6.0.0
+      react: ^19.2.6
+      react-dom: ^19.2.6
+      react-helmet: ^6.1.0
       react-i18next: ^16.3.5 || ^17.0.0
-      react-router-dom: ^7.9.6
+      react-router-dom: ^7.15.1
 
   '@mui/core-downloads-tracker@7.3.11':
     resolution: {integrity: sha512-a7I/b/nBTdXYz2cOSlEmkQ9WWE1x8FHpqMhFPp+Y1VPFxcOw91G5ELOHARQAGSPy5V+UCgJua6K/1x70bAtQPw==}
@@ -2548,7 +2548,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@micha.bigler/ui-core-micha@2.4.0(34e18b240474c20f8804485157ecf642)':
+  '@micha.bigler/ui-core-micha@2.4.3(34e18b240474c20f8804485157ecf642)':
     dependencies:
       '@emotion/react': 11.14.0(@types/react@19.2.14)(react@19.2.6)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.6))(@types/react@19.2.14)(react@19.2.6)

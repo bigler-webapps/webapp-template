@@ -6,7 +6,13 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("accounts/", include("allauth.urls")),
+    # S106 platform pattern: do NOT mount `path("accounts/", include("allauth.urls"))`.
+    # The headless flow (`/api/auth/_allauth/...`) is provided via
+    # `django_core_micha.api_urls` below; classic HTML auth views are dead
+    # surface that future allauth regressions could re-expose. Mail templates
+    # reference HEADLESS_FRONTEND_URLS (frontend routes), not /accounts/.
+    # Only mount /accounts/ if there's a deliberate backwards-compat reason
+    # — document the reason here.
     path("api/", include("django_core_micha.api_urls")),
     path("api/users/", include("users.urls")),
     path("api/utils/", include("utils.urls")),
