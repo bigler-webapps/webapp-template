@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.generic import RedirectView, TemplateView
-from django.views.static import serve
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -17,15 +16,14 @@ urlpatterns = [
     ),
 ]
 
-urlpatterns += [
-    re_path(
-        r"^media/(?P<path>.*)$",
-        serve,
-        {"document_root": settings.MEDIA_ROOT},
-    ),
-]
-
+# Local dev only: serve /static/ and /media/ via Django so contributors don't
+# need a separate reverse proxy. In production, Nginx/Traefik MUST be the
+# upstream for /media/ — Django's `static.serve` does not enforce
+# Content-Disposition headers, which means stored XSS via uploaded HTML/SVG
+# if /media/ is publicly reachable. Tracked as S14 / S92 in
+# webapp-management/SECURITY_FINDINGS.md.
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += [
