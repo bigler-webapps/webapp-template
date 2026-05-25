@@ -445,9 +445,83 @@ a new monitor for `<tenant-slug>` appears.
 
 ---
 
-## 10. Develop → Main promotion (when ready for production)
+## 10. Post-staging-soak gates
 
-After staging is stable for at least 1 week:
+> Two independent gates fire after the staging burn-in window. Both require a
+> **≥ 7-day soak period** with the staging deploy stable AND Tailscale-SSH
+> proven as the primary access path. Do **NOT** combine these into one big-bang
+> cutover — production-promotion and SSH-lockdown are orthogonal risks.
+
+### 10.1 Soak-period acceptance criteria (gate for 10.2 and 10.3)
+
+The agent MUST verify ALL of the following before either lockdown or
+production-promotion proceeds. The clock starts on the first successful
+staging deploy (Section 8). Earliest gate-pass: 7 calendar days later.
+
+```bash
+# Tailscale uptime ≥ 99% over the soak window (read Tailscale admin → Devices)
+# Manual check — record `last_seen` per device, compute downtime ratio.
+
+# Zero Tailscale outages ≥ 5 minutes in the soak window
+# Check via: tailscale status --json + tailscale debug netcheck history
+# (or read Tailscale admin → Logs if Tailscale Business)
+
+# At least 3 successful deploys via Tailscale-SSH path in the soak window
+gh run list --workflow main.yml --branch develop --status success --limit 10 \
+  --json conclusion,createdAt,headBranch \
+  --jq '[.[] | select(.headBranch=="develop")] | length'
+# Expected: ≥ 3
+
+# Public-SSH-via-22 has NOT been used as fallback during soak
+# Manual check — operator's own action log; OR audit `/var/log/auth.log` on the server
+ssh deploy@<server> "grep 'Accepted publickey' /var/log/auth.log | tail -20"
+# Expected: source IPs are all 100.x.x.x (Tailscale CGNAT range) — no public IPs
+```
+
+If ANY criterion fails, the soak resets. Restart the 7-day clock from the date
+the issue was resolved.
+
+**PAUSE:** Manual human review of the soak evidence. The agent must NOT proceed
+to 10.2 or 10.3 without explicit operator approval recording the soak-pass.
+
+### 10.2 Public-SSH lockdown (hardening — after 10.1 passes)
+
+> **Why this is gated**: the platform's `provision-server.yml` installs UFW
+> with `tcp/22` open BY DESIGN — that's the break-glass path while Tailscale
+> is unproven. Closing it on day 1 would lock you out of the server the moment
+> Tailscale has a hiccup (ACL drift, OAuth token expiry, tailscaled restart
+> loop). The 7-day soak gives Tailscale a chance to fail loudly while you can
+> still recover.
+
+Once 10.1 is signed off, lock down public-SSH:
+
+```bash
+# 1. Pre-flight: confirm Tailscale-SSH STILL works RIGHT NOW (don't trust soak alone)
+ssh deploy@<tenant-slug>-prod.tail990d7f.ts.net "hostname && date"
+# Expected: server hostname + current date — NO password prompt
+
+# 2. Pre-flight: confirm you can reach Hetzner Rescue Console
+#    (Hetzner Cloud → server → Console → log in once → log out)
+#    This is the break-glass-of-the-break-glass.
+
+# 3. On the server, deny tcp/22 from public:
+ssh deploy@<tenant-slug>-prod.tail990d7f.ts.net "sudo ufw delete allow 22/tcp && sudo ufw status verbose"
+# Expected status: 22/tcp not in the rules list; default policy `deny (incoming)`
+
+# 4. Harden sshd to refuse password auth (defence-in-depth — Tailscale-SSH
+#    uses SSO, not passwords, but keep keys-only on the public bind too if
+#    it ever gets reopened during break-glass):
+ssh deploy@<tenant-slug>-prod.tail990d7f.ts.net "sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config && sudo systemctl reload sshd"
+
+# 5. VERIFY from a non-Tailscale network (e.g. phone hotspot):
+ssh -o ConnectTimeout=5 deploy@<server-public-ip>
+# Expected: timeout or "Connection refused" — NOT a login prompt
+```
+
+**Reversal procedure**: see `webapp-management-template/docs/BREAK_GLASS.md`
+Scenario 2 for re-opening tcp/22 if Tailscale fails later.
+
+### 10.3 Develop → Main promotion (production cutover — after 10.1 passes)
 
 ```bash
 git checkout main
@@ -489,6 +563,8 @@ tables as a tracked repo.
 | 6.1 | Server not provisioned | After platform-side `provision-server.yml` runs |
 | 7.2 | Origin Cert manual update | After human adds the cert to webapp-management |
 | 8.3 | Security baseline failure | After issue investigated + fixed |
+| 10.1 | Soak-period evidence review | After 7+ calendar days AND operator signs off on Tailscale-SSH-stability evidence |
+| 10.2 | Public-SSH lockdown is destructive if Tailscale-SSH actually broke | Operator confirms break-glass path (Hetzner Rescue Console) is tested + reachable |
 
 ---
 
@@ -564,6 +640,7 @@ missing entries with the correct `source:` paths. Re-run `sync-secrets`.
 | `bigler-webapps/webapp-management/ARCHITECTURE.md` | Platform topology, deploy flow, Tailscale, Cloudflare |
 | `bigler-webapps/webapp-management-template/docs/ONBOARDING.md` | Platform-side onboarding (Steps 1–10 of infrastructure) |
 | `bigler-webapps/webapp-management-template/docs/SECRETS.md` | Per-secret schema, rotation cadence |
+| `bigler-webapps/webapp-management-template/docs/BREAK_GLASS.md` | Recovery runbook — especially Scenario 2 for re-opening tcp/22 after Section 10.2 lockdown |
 | `bigler-webapps/django-core-micha/README.md` | Auth-library API |
 | `bigler-webapps/workflow-templates/CHANGELOG.md` | Composite-action version history (for choosing pin) |
 | `bigler-webapps/ui-core-micha/CHANGELOG.md` | UI-library version history |
@@ -586,6 +663,12 @@ The agent reports onboarding-complete only when ALL of these are true:
 - [ ] Kuma monitor registered + active
 - [ ] `APP_FINDINGS.md` initialized for the tenant
 - [ ] Central `webapp-management/SECURITY_FINDINGS.md` overview lists the new tenant
+
+> **Note**: Section 10.2 (Public-SSH lockdown) is **NOT** part of onboarding-
+> complete. It is a separate post-onboarding hardening step that runs AFTER
+> a ≥ 7-day soak period (Section 10.1). The agent reports onboarding-complete
+> with `tcp/22` still open from the public internet — this is intentional and
+> documented as the break-glass path.
 
 If any item is unchecked, the onboarding is NOT complete. Report the missing
 items as a blocker-list to the human operator.
