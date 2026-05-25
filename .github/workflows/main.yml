@@ -32,24 +32,33 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@main
+      - uses: dorny/paths-filter@v3   # TODO S33: SHA-pin via Renovate
+        id: changes
+        with:
+          filters: |
+            monitor:
+              - 'monitoring/**'
+              - 'project.yaml'
+
+      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@v2.0.3
         with:
           environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-          ssh_host: ${{ secrets.SSH_HOST }}
-          ssh_user: ${{ secrets.SSH_USER }}
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # ssh_host: composite-derived from project.yaml/environments[env].server
+          # ssh_user: composite default 'deploy'
+          # ssh_private_key: removed in v1.11.0 (Tailscale-SSH-only)
+          ts_oauth_client_id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          ts_oauth_secret: ${{ secrets.TS_OAUTH_SECRET }}
           secrets_context_json: ${{ toJson(secrets) }}
 
       # Optional: register Uptime Kuma monitors after every successful deploy.
       # Remove this step (and monitoring/monitor.yml) if you don't use Kuma.
       # See monitoring/monitor.yml for setup notes.
-      - uses: bigler-webapps/workflow-templates/.github/actions/register-kuma-monitors@main
-        if: success()
+      - uses: bigler-webapps/workflow-templates/.github/actions/register-kuma-monitors@v2.0.3
+        if: success() && (steps.changes.outputs.monitor == 'true' || github.event_name == 'workflow_dispatch')
         with:
+          # v2.0.1: Direct HTTPS via Tailscale Serve — no SSH-tunnel needed.
           config_path: monitoring/monitor.yml
-          # Tunnel to the central Kuma host (not this app's deploy host).
-          ssh_host: ${{ secrets.KUMA_SSH_HOST }}
-          ssh_user: ${{ secrets.KUMA_SSH_USER }}
-          ssh_private_key: ${{ secrets.KUMA_SSH_PRIVATE_KEY }}
+          ts_oauth_client_id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          ts_oauth_secret: ${{ secrets.TS_OAUTH_SECRET }}
           kuma_user: ${{ secrets.KUMA_AUTOMATION_USER }}
           kuma_password: ${{ secrets.KUMA_AUTOMATION_PASSWORD }}
