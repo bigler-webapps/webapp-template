@@ -84,7 +84,13 @@ RUN mkdir -p media static staticfiles && chown -R deploy:deploy media static sta
 
 USER deploy
 
+# collectstatic imports Django settings which require DJANGO_SECRET_KEY.
+# A build-time placeholder satisfies the check; the real key is injected
+# at runtime via env_file and overrides this empty value.
+ARG DJANGO_SECRET_KEY="build-time-collectstatic-placeholder"
+ENV DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
 RUN python manage.py collectstatic --noinput
+ENV DJANGO_SECRET_KEY=""
 
 EXPOSE 8000
 
