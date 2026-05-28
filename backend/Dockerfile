@@ -84,13 +84,12 @@ RUN mkdir -p media static staticfiles && chown -R deploy:deploy media static sta
 
 USER deploy
 
-# collectstatic imports Django settings which require DJANGO_SECRET_KEY.
-# A build-time placeholder satisfies the check; the real key is injected
-# at runtime via env_file and overrides this empty value.
-ARG DJANGO_SECRET_KEY="build-time-collectstatic-placeholder"
-ENV DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+# Force IS_LOCAL=True during build so all non-local env guards
+# (DJANGO_SECRET_KEY, EMAIL_HOST/PASSWORD, …) are skipped.
+# Runtime: generate-env writes ENV_TYPE=production/staging to .env;
+# docker-compose env_file overrides this build-time value.
+ENV ENV_TYPE=local
 RUN python manage.py collectstatic --noinput
-ENV DJANGO_SECRET_KEY=""
 
 EXPOSE 8000
 
