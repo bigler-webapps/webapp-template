@@ -2,6 +2,11 @@ from pathlib import Path
 
 from django_core_micha.settings.settings_base import *  # noqa: F403,F401
 
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # noqa: F405
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+}
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 PROJECT_NAME = env("PROJECT_NAME", default="Project Template App")  # noqa: F405
