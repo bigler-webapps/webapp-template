@@ -5,7 +5,14 @@ on:
     branches: [develop, main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   ci:
     uses: bigler-webapps/workflow-templates/.github/workflows/app-ci.yml@main
     secrets: inherit
+    with:
+      runs-on: ubuntu-latest    # Replace with [self-hosted, <runner-label>] for self-hosted runners
+      run-backend: true         # Set false to skip backend pytest (saves minutes on frontend-only PRs)
+      run-frontend-tests: false # Set true to run vitest (opt-in — adds ~30 s per run)

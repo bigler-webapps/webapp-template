@@ -9,6 +9,20 @@ project_name: "<your-app-slug>"             # e.g. "kerzenziehen", "jg-ferien"
 container_prefix: "<your-prefix>"           # e.g. "kz", "jg"
 image_name: "ghcr.io/<your-org>/<your-app>-backend"
 
+# Non-secret runtime config — goes here, NOT in secrets.yaml / Proton.
+# dcm generate-env (>=2.17.0) reads these and injects them as env vars.
+# Secrets (passwords, OAuth secrets, API keys) stay in Proton / secrets.yaml.
+app_env:
+  DB_NAME: <your-app-slug>_db
+  DB_USER: <your-app-slug>
+  DB_HOST: db
+  EMAIL_HOST: smtp.example.com
+  EMAIL_PORT: "587"
+  EMAIL_USER: noreply@<your-domain>
+  # GOOGLE_CLIENT_ID: "..."    # add if using Google OAuth
+  # MICROSOFT_CLIENT_ID: "..."  # add if using Microsoft OAuth
+  # MICROSOFT_TENANT_ID: common
+
 environments:
   production:
     server: main-prod
