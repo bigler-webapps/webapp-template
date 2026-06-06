@@ -1,4 +1,5 @@
 from pathlib import Path
+import tempfile
 
 import environ
 
@@ -31,8 +32,10 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
 
-# Avoid writing test media into the project tree.
-MEDIA_ROOT = BASE_DIR / "test_media"
+# Avoid writing test media into the project tree: BASE_DIR may not be
+# writable in a CI container, so uploads would hit PermissionError.
+# A fresh temp dir is always writable and isolated per test session.
+MEDIA_ROOT = tempfile.mkdtemp(prefix="<your-app-slug>-test-media-")
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
