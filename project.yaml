@@ -7,7 +7,7 @@
 
 project_name: "<your-app-slug>"             # e.g. "kerzenziehen", "jg-ferien"
 container_prefix: "<your-prefix>"           # e.g. "kz", "jg"
-image_name: "ghcr.io/<your-org>/<your-app>-backend"
+image_name: "ghcr.io/bigler-webapps/<your-app>-backend"  # REQUIRED: replace <your-app> before first deploy; literal placeholder causes generate-env to fail-loud
 
 # Non-secret runtime config — goes here, NOT in secrets.yaml / Proton.
 # dcm generate-env (>=2.17.0) reads these and injects them as env vars.
