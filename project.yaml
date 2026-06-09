@@ -19,9 +19,11 @@ app_env:
   EMAIL_HOST: smtp.example.com
   EMAIL_PORT: "587"
   EMAIL_USER: noreply@<your-domain>
-  # GOOGLE_CLIENT_ID: "..."    # add if using Google OAuth
-  # MICROSOFT_CLIENT_ID: "..."  # add if using Microsoft OAuth
-  # MICROSOFT_TENANT_ID: common
+  # Social Login — shared webapp-auth client (same IDs for all apps; not secret)
+  # After adding these, register redirect URIs: see docs/ONBOARDING.md Phase 3 → Social Login.
+  GOOGLE_CLIENT_ID: "585298874656-8r2osbe2mpuah9odf8g15l0nsikvmq1a.apps.googleusercontent.com"
+  MICROSOFT_CLIENT_ID: "f107a674-af2d-457f-b50f-3fb0d820c553"
+  MICROSOFT_TENANT_ID: common
 
 environments:
   production:
