@@ -36,6 +36,10 @@ jobs:
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          # workflow_dispatch: staging → develop, production → main.
+          # Push events: '' lets checkout use the triggering ref (develop or main).
+          ref: ${{ github.event_name == 'workflow_dispatch' && (inputs.environment == 'staging' && 'develop' || 'main') || '' }}
 
       - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@v2.2.1
         with:
