@@ -14,4 +14,4 @@ jobs:
     if: ${{ ! github.event.repository.is_template }}
     uses: bigler-webapps/workflow-templates/.github/workflows/staging-health.yml@main
     with:
-      runs-on: ubuntu-latest  # Replace with [self-hosted, <runner-label>] for self-hosted runners
+      runs-on: netcup
