@@ -71,6 +71,16 @@ services:
       - "traefik.http.routers.${ROUTER_NAME}-upload.middlewares=sec-headers@docker,body-limit-upload@file,upload-ratelimit@file"
       - "traefik.http.routers.${ROUTER_NAME}-upload.service=${ROUTER_NAME}"
 
+      # WebSocket: dedicated router — buffering (body-limit-default@file) and
+      # canonical-host redirect are both incompatible with WS upgrade.
+      # Remove this block if your app does not use WebSockets.
+      - "traefik.http.routers.${ROUTER_NAME}-ws.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/ws/`)"
+      - "traefik.http.routers.${ROUTER_NAME}-ws.entrypoints=websecure"
+      - "traefik.http.routers.${ROUTER_NAME}-ws.tls=true"
+      - "traefik.http.routers.${ROUTER_NAME}-ws.priority=100"
+      - "traefik.http.routers.${ROUTER_NAME}-ws.middlewares=sec-headers@docker"
+      - "traefik.http.routers.${ROUTER_NAME}-ws.service=${ROUTER_NAME}"
+
       - "traefik.http.services.${ROUTER_NAME}.loadbalancer.server.port=8000"
     restart: unless-stopped
 

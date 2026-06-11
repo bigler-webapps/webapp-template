@@ -16,9 +16,8 @@ app_env:
   DB_NAME: <your-app-slug>_db
   DB_USER: <your-app-slug>
   DB_HOST: db
-  EMAIL_HOST: smtp.example.com
-  EMAIL_PORT: "587"
-  EMAIL_USER: noreply@<your-domain>
+  EMAIL_PROVIDER: resend
+  DEFAULT_FROM_EMAIL: "noreply@example.com"   # REPLACE: e.g. "<your-app>@<your-domain>"
   # Social Login — shared webapp-auth client (same IDs for all apps; not secret)
   # After adding these, register redirect URIs: see docs/ONBOARDING.md Phase 3 → Social Login.
   GOOGLE_CLIENT_ID: "585298874656-8r2osbe2mpuah9odf8g15l0nsikvmq1a.apps.googleusercontent.com"
