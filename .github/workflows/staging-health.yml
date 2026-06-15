@@ -13,5 +13,6 @@ jobs:
     # Skip on the template repo itself — no staging environment exists.
     if: ${{ ! github.event.repository.is_template }}
     uses: bigler-webapps/workflow-templates/.github/workflows/staging-health.yml@main
+    secrets: inherit
     with:
       runs-on: netcup
