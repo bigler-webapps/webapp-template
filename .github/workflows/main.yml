@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@v2.2.1
+      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@v2.3.1
         with:
           environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
           # ssh_host: composite-derived from project.yaml/environments[env].server
