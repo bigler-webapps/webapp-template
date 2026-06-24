@@ -39,7 +39,7 @@ services:
 
       # Auth endpoints: brute-force-rate-limited on /accounts/* (allauth + dcm).
       # Add per-app priority=100 so this wins over the main catch-all.
-      - "traefik.http.routers.${ROUTER_NAME}-accounts.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/accounts`)"
+      - "traefik.http.routers.${ROUTER_NAME}-accounts.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/accounts`)"
       - "traefik.http.routers.${ROUTER_NAME}-accounts.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-accounts.tls=true"
       - "traefik.http.routers.${ROUTER_NAME}-accounts.priority=100"
@@ -51,7 +51,7 @@ services:
       # subpath router using `media-inline@file` (see reimbursements pattern).
       # If your app has NO /media uploads, remove this router and instead drop
       # the media_volume + MEDIA_URL config entirely.
-      - "traefik.http.routers.${ROUTER_NAME}-media.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/media`)"
+      - "traefik.http.routers.${ROUTER_NAME}-media.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/media`)"
       - "traefik.http.routers.${ROUTER_NAME}-media.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-media.tls=true"
       - "traefik.http.routers.${ROUTER_NAME}-media.priority=100"
@@ -64,7 +64,7 @@ services:
       # Reference patterns:
       #   - jg-ferien zip-bulk: `Path('/api/.../zip-bulk-upload/')` + body-limit-large
       #   - reimbursements claims: PathPrefix(/api/claims/attachments) + body-limit-upload
-      - "traefik.http.routers.${ROUTER_NAME}-upload.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/api/uploads`)"
+      - "traefik.http.routers.${ROUTER_NAME}-upload.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/api/uploads`)"
       - "traefik.http.routers.${ROUTER_NAME}-upload.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-upload.tls=true"
       - "traefik.http.routers.${ROUTER_NAME}-upload.priority=100"
@@ -74,7 +74,7 @@ services:
       # WebSocket: dedicated router — buffering (body-limit-default@file) and
       # canonical-host redirect are both incompatible with WS upgrade.
       # Remove this block if your app does not use WebSockets.
-      - "traefik.http.routers.${ROUTER_NAME}-ws.rule=${TRAEFIK_ROUTER_RULE} && PathPrefix(`/ws/`)"
+      - "traefik.http.routers.${ROUTER_NAME}-ws.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/ws/`)"
       - "traefik.http.routers.${ROUTER_NAME}-ws.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-ws.tls=true"
       - "traefik.http.routers.${ROUTER_NAME}-ws.priority=100"
