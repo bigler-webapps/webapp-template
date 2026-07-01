@@ -1,20 +1,20 @@
 # Core platform library — exact pin so a buggy upstream release does not
 # auto-propagate. Bump explicitly per app via Renovate PR.
-django-core-micha==2.19.0
+django-core-micha==2.22.0
 
 # Django stack
-Django>=6.0.5,<6.1
+Django>=6.0.6,<6.1
 djangorestframework>=3.17.1
 django-cors-headers>=4.9.0
 channels>=4.3.2
 channels-redis>=4.3.0
-daphne>=4.2.1
+daphne>=4.2.2
 whitenoise>=6.12.0
 gunicorn>=26.0.0
 
 # Database
 psycopg2-binary>=2.9.12
-psycopg[binary,pool]>=3.2
+psycopg[binary,pool]>=3.3.4
 
 # Auth
 django-allauth[mfa]
@@ -31,7 +31,7 @@ redis
 
 # HTTP / tokens
 requests>=2.34.2
-PyJWT[crypto]>=2.12.1
+PyJWT[crypto]>=2.13.0
 
 # Files / images
 Pillow
@@ -39,4 +39,4 @@ Pillow
 # Tests
 pytest
 pytest-django
-pytest-asyncio>=0.23
+pytest-asyncio>=0.26.0
