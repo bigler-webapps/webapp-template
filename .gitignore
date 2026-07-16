@@ -70,6 +70,9 @@ frontend/.pnpm-store/
 # Build-Ordner (z. B. von create-react-app)
 frontend/build/
 frontend/dist/
+# run-dev --watch atomic build targets (served locally via FRONTEND_BUILD_DIR)
+frontend/build_current/
+frontend/build_next/
 
 # Lokale Umgebungsvariablen (falls du eine .env-Datei hast)
 frontend/.env

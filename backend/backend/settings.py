@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from django_core_micha.settings.settings_base import *  # noqa: F403,F401
@@ -72,6 +73,16 @@ TEMPLATES = [  # noqa: F405
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Local dev only: serve the SPA live from a host-mounted frontend build
+# (run-dev --watch writes into frontend/build_current). Gated on the env var so
+# this is a no-op in staging/production, where FRONTEND_BUILD_DIR is unset and
+# the SPA is served from the image-baked static/templates. Mirrors hram.
+_frontend_build_dir = os.environ.get("FRONTEND_BUILD_DIR")
+if _frontend_build_dir:
+    frontend_build_path = Path(_frontend_build_dir)
+    STATIC_ROOT = frontend_build_path / "static"
+    TEMPLATES[0]["DIRS"] = [frontend_build_path] + list(TEMPLATES[0]["DIRS"])
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

@@ -4,12 +4,14 @@ services:
       - "${WEB_PORT:-8000}:8000"
     volumes:
       - ./backend:/app/backend
-      - /app/backend/static
-      - /app/backend/templates
-      - /app/backend/staticfiles
       - ./backend/media:/app/backend/media
+      # Local hot-reload: serve the SPA live from the host frontend build tree.
+      # run-dev --watch rebuilds into frontend/build_current; Django reads it via
+      # FRONTEND_BUILD_DIR below (STATIC_ROOT + TEMPLATES.DIRS). Mirrors hram/spesix.
+      - ./frontend:/app/frontend_host
     environment:
       - ENV_TYPE=local
+      - FRONTEND_BUILD_DIR=/app/frontend_host/build_current
     env_file:
       - .env
 
