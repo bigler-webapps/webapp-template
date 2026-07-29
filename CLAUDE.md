@@ -8,8 +8,9 @@
 - **Working tree:** Vor Code-Änderungen `git status`. Ist der Tree nicht clean
   oder erscheinen unerwartete Dateien im Diff → **stoppen und den Operator fragen**.
   Fremde/unerwartete Änderungen NIEMALS reverten oder verwerfen.
-- **Standard-Entwicklungsbranch: `develop`.** Feature-Branches von `develop`
-  abzweigen; PRs zielen auf `develop`. Promotion zu `main` nur via PR.
+- **Standard-Entwicklungsbranch: `develop`.** Direkt auf den Trunk committen —
+  KEINE Feature-Branches (harness-blockiert). Einziger PR ist `develop → main`
+  (Promotion zum geschützten `main`). Siehe root `AGENTS.md` → "Branch discipline".
 - **Branch-Wechsel nur nach expliziter Bestätigung** (`git checkout <branch>` /
   `git switch`).
 - `git checkout/restore/reset --hard/clean`, force-push, `gh secret set`,
