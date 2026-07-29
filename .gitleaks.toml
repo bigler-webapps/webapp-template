@@ -1,0 +1,12 @@
+title = "webapp-template gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "known false-positive sources"
+paths = [
+  # detect-secrets' baseline stores SHA1 hashes of detected candidates, not
+  # actual secrets -- gitleaks' generic-api-key rule matches these hex hashes.
+  '''^\.secrets\.baseline$''',
+]

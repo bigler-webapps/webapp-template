@@ -12,6 +12,7 @@
   (Workflows, `project.yaml`-Shape, Settings, Pins, `urls.py`, WS, Tests)?
 - Latest-Versionen ermitteln (nicht raten):  
   aktueller `deploy-app@vX.Y.Z`-Tag (workflow-templates), `django-core-micha==`, `@micha.bigler/ui-core-micha==` (vgl. hram als Referenz).
+- Dieses Template bringt `.pre-commit-config.yaml` fuer Secret-Scanning mit gitleaks und detect-secrets mit. In einem frischen Clone einmal `pre-commit install` ausfuehren, damit die Hooks lokal vor jedem Commit laufen.
 - `cd webapp-template && git pull` — sicherstellen, dass die eigene Template-Kopie aktuell ist.
 
 ---
