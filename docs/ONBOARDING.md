@@ -29,7 +29,11 @@
 - `environments` (production/staging/local) mit korrekten Domains
 - `image_name` = echter ghcr-Pfad (`ghcr.io/bigler-webapps/<app>-backend`)  
   **NIE Platzhalter** `your-org` / `ihr-user` — sonst Image-Kollision auf geteilten Servern
-- `app_env`-Block (nicht-geheime Runtime-Config), eindeutige Ports, `version:` (Release-Disziplin)
+- `app_env`-Block (nicht-geheime Runtime-Config), `version:` (Release-Disziplin)
+- **Lokale Ports:** NN aus dem zentralen Register wählen und dort eintragen —
+  `webapp-management/docs/LOCAL_PORTS.md`. Nicht raten/wiederverwenden: drei Apps sind
+  bereits unabhängig auf dieselbe NN gelandet, weil das Template selbst früher einen
+  echten, bereits vergebenen Default auslieferte.
 - **Social Login** — Client-IDs sind nicht-geheim, gehören in `app_env` (ein geteilter Client für alle Apps):
 
   ```yaml
