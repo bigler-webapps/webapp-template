@@ -42,8 +42,18 @@ environments:
       - "localhost"
       - "127.0.0.1"
     use_traefik: false
-    # Pick port numbers that don't collide with other local apps you run.
-    web_port: 8027
-    frontend_port: 5127
-    db_port: 5427
-    redis_port: 6327
+    # REPLACE all four before the first local run. Claim an unused NN from the
+    # port register (webapp-management/docs/LOCAL_PORTS.md) and enter your app
+    # there in the same step; the families are web 80NN / frontend 51NN /
+    # db 54NN / redis 63NN with the SAME NN.
+    #
+    # These are deliberately non-numeric placeholders, like image_name above:
+    # a real default would be a real app's port, and every repo created from
+    # this template that forgot to renumber would silently collide with it.
+    # That is exactly how hpc-bridge ended up on cockpit's ports. Failing loudly
+    # here is cheaper than debugging a "port is already allocated" that names a
+    # container you have never heard of.
+    web_port: "<REPLACE-web-80NN>"
+    frontend_port: "<REPLACE-frontend-51NN>"
+    db_port: "<REPLACE-db-54NN>"
+    redis_port: "<REPLACE-redis-63NN>"

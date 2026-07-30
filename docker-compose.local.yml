@@ -1,7 +1,12 @@
 services:
   backend:
     ports:
-      - "${WEB_PORT:-8000}:8000"
+      # Fail loud instead of falling back. The former default was `:-8000`,
+      # which silently bound hram's port whenever WEB_PORT was unset — and the
+      # db/redis defaults below were the Postgres/Redis system ports, the two
+      # most likely to be occupied on any dev machine. A missing variable must
+      # stop the stack, not invent a number.
+      - "${WEB_PORT:?WEB_PORT is not set - run generate-env, and fill environments.local in project.yaml}:8000"
     volumes:
       - ./backend:/app/backend
       - ./backend/media:/app/backend/media
@@ -17,13 +22,13 @@ services:
 
   db:
     ports:
-      - "${DB_HOST_PORT:-5432}:5432"
+      - "${DB_HOST_PORT:?DB_HOST_PORT is not set - run generate-env, and fill environments.local in project.yaml}:5432"
 
   redis:
     image: redis:8-alpine
     command: redis-server --loglevel warning
     ports:
-      - "${REDIS_HOST_PORT:-6379}:6379"
+      - "${REDIS_HOST_PORT:?REDIS_HOST_PORT is not set - run generate-env, and fill environments.local in project.yaml}:6379"
 
 networks:
   proxy:
