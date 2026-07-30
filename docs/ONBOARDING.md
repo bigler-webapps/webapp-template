@@ -92,12 +92,26 @@
 - [ ] **Secrets** — eine Ebene pro Secret (`env`-variabel → env; geteilt → repo via `target_scope: repo`).  
   `sync-secrets --server --secret-target <env>` pro Environment + repo-level;  
   danach Timestamps geprüft und keine Shadows (Secret nicht doppelt repo+env).
-- [ ] **`inventory.yaml`:** App in `sync_staging_apps` des Ziel-Servers.
-- [ ] **DNS (Terraform):** `staging-<app>.<zone>` A-Record + Prod-Domain CNAME→Tunnel (in der `zone-.tf`).  
-  Wildcard-first bei evtl. Origin-Cert (Order-Churn vermeiden). `apply`.
-- [ ] **CF-Tunnel-Ingress:** der Server-Tunnel routet die App-Hostnames → `traefik:443`.
-- [ ] **Kuma-Monitore:** App in `kuma-sync.yml` APPS-Liste + `project.yaml`-Domains  
-  (Monitor wird aus `domains[0]` abgeleitet); kuma-sync laufen lassen.
+- [x] ~~**`inventory.yaml`:** App in `sync_staging_apps` des Ziel-Servers.~~  
+  **Entfällt (verifiziert 2026-07-30):** `inventory.yaml` existiert in webapp-management
+  nicht mehr. `.github/scripts/resolve_app_inventory.py` leitet `deployed_apps` und
+  `sync_apps` dynamisch aus `environments.production.server` jeder App ab. Statt eines
+  Eintrags hier: entscheide bewusst über `staging_sync: <bool>` im eigenen
+  `project.yaml` (Default `true` = Prod-Daten werden nach Staging repliziert — bei
+  personenbezogenen Daten in der Regel falsch).
+- [ ] **DNS (Terraform):** `staging-<app>.<zone>` A-Record; für die Prod-Domain **beide
+  Muster sind gültig** — Direct-A auf den Zielserver (so `survey`, `hram`, `cockpit` auf
+  `bigler-consult.ch`) oder CNAME→Tunnel (so Apps mit eigener Zone und
+  `reimbursements`/`spesix`/`hpc-bridge`). Am Schwester-Muster derselben Zone und
+  desselben Servers orientieren, nicht raten. Wildcard-first bei evtl. Origin-Cert
+  (Order-Churn vermeiden). `apply`.
+- [ ] **CF-Tunnel-Ingress:** nur beim Tunnel-Muster — der Server-Tunnel routet die
+  App-Hostnames → `traefik:443`. Bei Direct-A nichts zu tun.
+- [x] ~~**Kuma-Monitore:** App in `kuma-sync.yml` APPS-Liste.~~  
+  **Entfällt (verifiziert 2026-07-30):** die hardcodierte `APPS`-Liste ist weg;
+  kuma-sync zieht die App-Repos über denselben `resolve_app_inventory.py`. Der Monitor
+  wird weiterhin aus `domains[0]` des `project.yaml` abgeleitet — also nur dort die
+  Domains korrekt setzen; kuma-sync laufen lassen.
 - [ ] **Origin-Cert** (falls eigene Zone, kein Wildcard-Cover): `TF origin-cert-<zone>.tf` (sensitive outputs) → Proton → sync → `dynamic/origin-certs.yml`.
 - [ ] **CF Access** (falls Gating nötig, z. B. Dashboard/sensible Endpunkte): `cf-access-<zone>.tf`.
 - [ ] **deploy-app-Pin** = aktueller Tag.
