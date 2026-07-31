@@ -38,11 +38,12 @@ services:
       - "traefik.http.routers.${ROUTER_NAME}.middlewares=sec-headers@docker,body-limit-default@file"
 
       # Auth endpoints: brute-force-rate-limited on /accounts/* (allauth + dcm).
-      # Add per-app priority=100 so this wins over the main catch-all.
+      # No explicit priority: Traefik v3 auto-priority = rule length, and this
+      # sub-rule (catch-all + PathPrefix) is always longer than the catch-all,
+      # so it wins without a numeric label (which would only fight length ordering).
       - "traefik.http.routers.${ROUTER_NAME}-accounts.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/accounts`)"
       - "traefik.http.routers.${ROUTER_NAME}-accounts.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-accounts.tls=true"
-      - "traefik.http.routers.${ROUTER_NAME}-accounts.priority=100"
       - "traefik.http.routers.${ROUTER_NAME}-accounts.middlewares=sec-headers@docker,auth-ratelimit@file,body-limit-default@file"
       - "traefik.http.routers.${ROUTER_NAME}-accounts.service=${ROUTER_NAME}"
 
@@ -54,7 +55,6 @@ services:
       - "traefik.http.routers.${ROUTER_NAME}-media.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/media`)"
       - "traefik.http.routers.${ROUTER_NAME}-media.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-media.tls=true"
-      - "traefik.http.routers.${ROUTER_NAME}-media.priority=100"
       - "traefik.http.routers.${ROUTER_NAME}-media.middlewares=sec-headers@docker,media-safe-headers@file"
       - "traefik.http.routers.${ROUTER_NAME}-media.service=${ROUTER_NAME}"
 
@@ -67,7 +67,6 @@ services:
       - "traefik.http.routers.${ROUTER_NAME}-upload.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/api/uploads`)"
       - "traefik.http.routers.${ROUTER_NAME}-upload.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-upload.tls=true"
-      - "traefik.http.routers.${ROUTER_NAME}-upload.priority=100"
       - "traefik.http.routers.${ROUTER_NAME}-upload.middlewares=sec-headers@docker,body-limit-upload@file,upload-ratelimit@file"
       - "traefik.http.routers.${ROUTER_NAME}-upload.service=${ROUTER_NAME}"
 
@@ -77,7 +76,6 @@ services:
       - "traefik.http.routers.${ROUTER_NAME}-ws.rule=(${TRAEFIK_ROUTER_RULE}) && PathPrefix(`/ws/`)"
       - "traefik.http.routers.${ROUTER_NAME}-ws.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}-ws.tls=true"
-      - "traefik.http.routers.${ROUTER_NAME}-ws.priority=100"
       - "traefik.http.routers.${ROUTER_NAME}-ws.middlewares=sec-headers@docker"
       - "traefik.http.routers.${ROUTER_NAME}-ws.service=${ROUTER_NAME}"
 
