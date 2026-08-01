@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>CI test stub</title></head>
+<body>
+<!--
+  CI-6: placeholder for the real frontend build's index.html (normally baked
+  in by the `final` Dockerfile stage via `COPY --from=frontend_build`). The
+  `backend_test` stage does not build the frontend, so this committed stub
+  satisfies spa_index_view's render("index.html") call for
+  tests/test_spa_index.py (which only asserts status/Content-Type/Cache-
+  Control headers, not the body). The `final` stage's COPY --from=frontend_build
+  overwrites this file with the real built SPA -- this stub never ships.
+-->
+</body>
+</html>

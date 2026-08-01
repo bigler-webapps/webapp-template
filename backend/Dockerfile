@@ -21,8 +21,8 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm run build
 
 
-# --- Stage 2: Python / Django ---
-FROM python:3.14-slim
+# --- Stage 2: Python / Django base (deps + source, no frontend/collectstatic) ---
+FROM python:3.14-slim AS backend_base
 
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; \
     echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
@@ -77,6 +77,17 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install ${UV_FLAGS} -r requirements.txt
 
 COPY --chown=deploy:deploy backend/ ./
+
+
+# --- Stage 3a: CI test target (CI-6) — pytest needs deps + source only, not the
+# frontend static/collectstatic below. Building with `--target backend_test`
+# skips the frontend_build stage entirely and stops here. ---
+FROM backend_base AS backend_test
+
+
+# --- Stage 3b: final deployed image — adds frontend static + collectstatic ---
+FROM backend_base AS final
+
 COPY --chown=deploy:deploy --from=frontend_build /app/build/static/ ./static/
 COPY --chown=deploy:deploy --from=frontend_build /app/build/index.html ./templates/index.html
 
