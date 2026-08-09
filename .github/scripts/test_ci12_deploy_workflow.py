@@ -47,6 +47,17 @@ class CI12DeployWorkflowTests(unittest.TestCase):
     def test_publish_step_passes_the_mui_license_key(self):
         self.assertIn("vite_app_mui_license_key: ${{ secrets.VITE_APP_MUI_LICENSE_KEY }}", MAIN_WORKFLOW)
 
+    def test_both_publish_and_deploy_receive_github_token(self):
+        """Regression: deploy-app's OWN github_token input (for the remote
+        GHCR login, separate from the publish step's) was missed across the
+        whole rollout on the first pass -- deploy failed with 'GITHUB_TOKEN
+        is required for pull-based deploys' despite the publish step
+        succeeding. cockpit's proven shape passes it to both steps."""
+        self.assertEqual(
+            MAIN_WORKFLOW.count("github_token: ${{ secrets.GITHUB_TOKEN }}"),
+            2,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -62,3 +62,4 @@ jobs:
           ts_oauth_client_id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           ts_oauth_secret: ${{ secrets.TS_OAUTH_SECRET }}
           secrets_context_json: ${{ toJson(secrets) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
