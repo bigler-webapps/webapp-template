@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   deploy:
@@ -41,8 +42,19 @@ jobs:
           # Push events: '' lets checkout use the triggering ref (develop or main).
           ref: ${{ github.event_name == 'workflow_dispatch' && (inputs.environment == 'staging' && 'develop' || 'main') || '' }}
 
-      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@v2.4.4
+      - name: Resolve checked-out SHA
+        id: resolve_sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: bigler-webapps/workflow-templates/.github/actions/publish-backend-image@v2.9.0
         with:
+          image_tag: ${{ steps.resolve_sha.outputs.sha }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          vite_app_mui_license_key: ${{ secrets.VITE_APP_MUI_LICENSE_KEY }}
+
+      - uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@v2.9.0
+        with:
+          image_tag: ${{ steps.resolve_sha.outputs.sha }}
           environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
           # ssh_host: composite-derived from project.yaml/environments[env].server
           # ssh_user: composite default 'deploy'
