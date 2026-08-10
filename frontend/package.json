@@ -6,7 +6,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fontsource/dm-sans": "^5.2.8",
-    "@micha.bigler/ui-core-micha": "2.5.0",
+    "@micha.bigler/ui-core-micha": "2.31.1",
     "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.11",
     "@mui/system": "^7.3.11",
