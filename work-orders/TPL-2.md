@@ -4,7 +4,9 @@
 **Tier:** 3 — touches CI.
 **Review:** independent `reviewer` — mandatory. `ui_reviewer` does not apply: a workflow input and a
 comment, no rendered output.
-**Blocked on:** `cockpit/UI-12`'s **CI run**. See "Why this waits".
+**Unblocked 2026-08-12** — `cockpit/UI-12` landed and its CI run is green: **12 files / 92 tests in
+47.68 s** ([run 31590500379](https://github.com/bigler-webapps/cockpit/actions/runs/31590500379)), with
+both `UI-10`'s and `UI-11`'s hard assertions among the files that ran.
 
 ---
 
@@ -24,15 +26,28 @@ and `UI-11`'s in cockpit, because all four landed in apps whose CI never runs vi
 
 Ship `true`, so a new app has to opt *out* deliberately rather than inherit silence.
 
-### Why this waits on cockpit
+### What cockpit's run settled, including one correction to this WO's own claim
 
-Flipping the template's default is the one change that stops the bleeding, and it is also the one with
-the widest blast radius: **every future scaffold**. If the shared workflow cannot actually run vitest,
-this change makes every new app red on day one.
+`cockpit/UI-12` flipped the same input in one real app first, deliberately, because the template's blast
+radius is every future scaffold. The result:
 
-`cockpit/UI-12` flips the same input in one real app. **Let its CI run answer the question first** — one
-app learning it beats four. If cockpit's frontend job goes green, this becomes a two-line change with
-evidence behind it. If it fails, we have learned that on an existing app rather than on every future one.
+- **The shared workflow runs vitest fine.** 12 files, 92 tests, **47.68 s**. So the inherited
+  "adds ~30 s per run" comment was in the right ballpark after all — an earlier draft of this WO called
+  it wrong by an order of magnitude, which came from broken local runs and is retracted.
+- **The flag does not give per-push enforcement, and this WO must not claim it does.** `ci.yml` triggers
+  only on `pull_request` and `workflow_dispatch` — never on a plain push. Since these apps commit
+  straight to the trunk and the only PR is the `develop → main` promotion, flipping the flag means the
+  frontend suite runs **on the promotion PR and on manual dispatch**. cockpit's green run needed a
+  dispatch to happen at all.
+
+That is weaker than "blocks a commit", and it is also exactly what `AGENTS.md` designs for: the narrow
+per-change set is the local gate, and **the full suite is the promotion gate's job.** So the value here is
+real but specific — a new app's promotion PR will exercise its frontend suite instead of silently never
+running it.
+
+**Worth knowing rather than fixing here:** if per-push enforcement is actually wanted, that is a
+`ci.yml` trigger change across the estate, a separate decision, and not something to smuggle into a
+template default.
 
 ### The local measurements are not evidence — mine contradict each other
 
