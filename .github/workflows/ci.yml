@@ -16,5 +16,5 @@ jobs:
     with:
       runs-on: ubuntu-latest    # Replace with [self-hosted, <runner-label>] for self-hosted runners
       run-backend: true         # Set false to skip backend pytest (saves minutes on frontend-only PRs)
-      run-frontend-tests: false # Set true to run vitest (opt-in — adds ~30 s per run)
+      run-frontend-tests: true  # Measured on cockpit's run 31590500379: 12 files, 92 tests, 47.68 s
       backend-target: backend_test  # CI-6: pytest-only image, skips frontend build + collectstatic
