@@ -83,7 +83,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgis/postgis:14-3.1
+    image: postgres:14
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
