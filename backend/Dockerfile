@@ -31,25 +31,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
     netcat-openbsd \
     gettext \
-    gdal-bin \
-    libgdal-dev \
-    libproj-dev \
-    libgeos-dev \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf-2.0-0 \
-    libffi-dev \
     libraqm0 \
-    libcairo2-dev \
-    python3-cffi \
-    python3-brotli \
-    libpangoft2-1.0-0 \
-    libopenjp2-7 \
     fonts-liberation \
     fontconfig \
     fonts-dejavu \
@@ -58,9 +42,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
-
-RUN export GDAL_LIBRARY_PATH=$(find /usr/lib -name libgdal.so | head -n 1) && \
-    echo "GDAL_LIBRARY_PATH=${GDAL_LIBRARY_PATH}" >> /etc/environment
 
 RUN addgroup --system --gid 1000 deploy && \
     adduser --system --uid 1000 --ingroup deploy --home /app deploy
