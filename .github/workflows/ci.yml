@@ -14,7 +14,7 @@ jobs:
     uses: bigler-webapps/workflow-templates/.github/workflows/app-ci.yml@main
     secrets: inherit
     with:
-      runs-on: ubuntu-latest    # Replace with [self-hosted, <runner-label>] for self-hosted runners
+      runs-on: netcup
       run-backend: true         # Set false to skip backend pytest (saves minutes on frontend-only PRs)
       run-frontend-tests: true  # Measured on cockpit's run 31590500379: 12 files, 92 tests, 47.68 s
       backend-target: backend_test  # CI-6: pytest-only image, skips frontend build + collectstatic

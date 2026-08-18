@@ -28,9 +28,7 @@ jobs:
     # would only fail and spam notifications. New repos created via
     # "Use this template" have is_template=false → deploy runs normally.
     if: ${{ ! github.event.repository.is_template }}
-    # PLACEHOLDER: replace with [self-hosted, <runner-label>] when using a self-hosted runner pool.
-    # GitHub-hosted (ubuntu-latest) works but costs more minutes and has no warm Docker cache.
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, netcup]
     environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     concurrency:
       group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
