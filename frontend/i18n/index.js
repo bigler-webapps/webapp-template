@@ -1,7 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-import { authTranslations } from "@micha.bigler/ui-core-micha";
+import { uiCoreTranslations } from "@micha.bigler/ui-core-micha";
 
 import translations from "./translations.json";
 
@@ -9,7 +9,7 @@ const LANGUAGE_STORAGE_KEY = "app.language";
 
 const mergedTranslations = {
   ...translations,
-  ...authTranslations,
+  ...uiCoreTranslations,
 };
 
 const resources = {

@@ -18,8 +18,8 @@ importers:
         specifier: ^5.2.8
         version: 5.2.8
       '@micha.bigler/ui-core-micha':
-        specifier: 2.31.1
-        version: 2.31.1(eca04a6ab3a76c1df085c8046beffa01)
+        specifier: 2.41.3
+        version: 2.41.3(eca04a6ab3a76c1df085c8046beffa01)
       '@mui/icons-material':
         specifier: ^7.3.11
         version: 7.3.11(@mui/material@7.3.11(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.7))(@types/react@19.2.14)(react@19.2.7))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(@types/react@19.2.14)(react@19.2.7)
@@ -375,8 +375,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@micha.bigler/ui-core-micha@2.31.1':
-    resolution: {integrity: sha512-PKp+mVLQvGGgn4/OeEUU1t8GSaITCUjpbWvy+GMBxGhbbcqVzMPawPcBSOsy6rs0Tyi2YmP5HB7hXDptaiCvGw==}
+  '@micha.bigler/ui-core-micha@2.41.3':
+    resolution: {integrity: sha512-nXOt84DzXqcAPkRP5EElrp9N4gIoq9+L1Z9MfePA+Kh6cBjdWxgpSWEV24ezXGoEXWrmAhCw+QLipxrz31mKjQ==}
     peerDependencies:
       '@emotion/react': ^11.14.0
       '@emotion/styled': ^11.14.1
@@ -2628,7 +2628,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@micha.bigler/ui-core-micha@2.31.1(eca04a6ab3a76c1df085c8046beffa01)':
+  '@micha.bigler/ui-core-micha@2.41.3(eca04a6ab3a76c1df085c8046beffa01)':
     dependencies:
       '@emotion/react': 11.14.0(@types/react@19.2.14)(react@19.2.7)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.7))(@types/react@19.2.14)(react@19.2.7)
