@@ -83,7 +83,11 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:14
+    # Must match what the fleet runs. Django 6.1 -- which this template pins --
+    # REFUSES PostgreSQL 14 outright (`PostgreSQL 15 or later is required`), so
+    # a new app cut from here would fail on its first `run-dev` while CI stayed
+    # green. Bumped 2026-08-19 alongside the estate-wide move to postgres:18.
+    image: postgres:18
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -94,7 +98,11 @@ services:
       - "backup.pg.user=${DB_USER}"
       - "backup.pg.db=${DB_NAME}"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # postgres:18-based images refuse the old /var/lib/postgresql/data mount
+      # and want the parent (docker-library/postgres#1259). A fresh template has
+      # no existing volume to preserve, so this is just the correct path -- no
+      # second volume needed, unlike the deployed apps' migration.
+      - postgres_data:/var/lib/postgresql
     networks:
       - app-network
 
