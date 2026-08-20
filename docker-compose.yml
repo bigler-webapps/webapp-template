@@ -16,6 +16,9 @@ services:
       - REDIS_HOST=redis
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
+      # gunicorn worker count for backend/Dockerfile's CMD. Start low --
+      # memory, not cores, is the constraint; raise via .env, no rebuild needed.
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-2}
     volumes:
       - media_volume:/app/backend/media
     networks:

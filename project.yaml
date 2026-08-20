@@ -57,3 +57,13 @@ environments:
     frontend_port: "<REPLACE-frontend-51NN>"
     db_port: "<REPLACE-db-54NN>"
     redis_port: "<REPLACE-redis-63NN>"
+
+# Optional: recurring commands run unattended by webapp-management's
+# scheduled-commands platform mechanism (any inventory target carrying the
+# `scheduled_commands` role runs these on a schedule via
+# `docker exec <app-backend> python manage.py <cmd>`). Uncomment and list
+# this app's own bare `manage.py` subcommand names (no flags — the mechanism
+# only accepts bare subcommand names).
+# infra:
+#   scheduled_commands:
+#     - <your_management_command>

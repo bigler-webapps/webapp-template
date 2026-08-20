@@ -84,5 +84,16 @@ ENV ENV_TYPE=local
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
-
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "backend.asgi:application"]
+# Several worker processes instead of a single daphne, so concurrent requests
+# use more than one of the host's cores (each worker has its own GIL). Memory,
+# not cores, is the binding constraint -- GUNICORN_WORKERS defaults to 2 and is
+# overridable without a rebuild. daphne stays installed in requirements.txt so
+# rollback is one line.
+# uvicorn's ProxyHeadersMiddleware only trusts X-Forwarded-* from peers
+# matching --forwarded-allow-ips, which defaults to 127.0.0.1 -- currently
+# inert since Traefik reaches this container over the `proxy` docker network,
+# not loopback (equivalent to daphne, which never read forwarded headers at
+# all). Do NOT widen forwarded-allow-ips without pinning it to Traefik's
+# actual network identity, or any other container on that network could spoof
+# X-Forwarded-Proto/-For into the ASGI scope.
+CMD ["sh", "-c", "exec gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-2} backend.asgi:application"]
