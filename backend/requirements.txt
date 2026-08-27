@@ -18,26 +18,26 @@ psycopg2-binary>=2.9.12
 psycopg[binary,pool]>=3.3.4
 
 # Auth
-django-allauth[mfa]
+django-allauth[mfa]>=65.19.1
 
 # Config / env
-django-environ
+django-environ>=0.14.0
 python-dotenv>=1.2.2
 PyYAML>=6.0.3
-django-crontab
+django-crontab>=0.7.1
 
 # Background tasks
-celery
-redis
+celery>=5.6.3
+redis>=8.1.0
 
 # HTTP / tokens
 requests>=2.34.2
 PyJWT[crypto]>=2.13.0
 
 # Files / images
-Pillow
+Pillow>=12.3.0
 
 # Tests
-pytest
-pytest-django
+pytest>=9.1.1
+pytest-django>=4.14.0
 pytest-asyncio>=0.26.0
