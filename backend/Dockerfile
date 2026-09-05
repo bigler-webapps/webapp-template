@@ -1,7 +1,7 @@
-# syntax=docker/dockerfile:1.24
+# syntax=docker/dockerfile:1.26
 
 # --- Stage 1: Frontend Build ---
-FROM --platform=$BUILDPLATFORM node:24.15.0-alpine AS frontend_build
+FROM --platform=$BUILDPLATFORM node:24.20.0-alpine AS frontend_build
 
 WORKDIR /app
 
