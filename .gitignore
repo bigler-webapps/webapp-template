@@ -48,6 +48,11 @@ backend/db.sqlite3
 # Log-Dateien
 backend/*.log
 
+# Python coverage artifacts (pytest-cov)
+htmlcov/
+.coverage
+**/.coverage
+
 # Generierte statische Dateien (falls Django diese ablegt)
 backend/staticfiles/*
 backend/static/*
@@ -76,6 +81,9 @@ frontend/build_next/
 
 # Lokale Umgebungsvariablen (falls du eine .env-Datei hast)
 frontend/.env
+
+# Vitest coverage artifacts
+frontend/coverage/
 
 # Debug-Log-Dateien
 frontend/npm-debug.log*
