@@ -67,3 +67,12 @@ environments:
 # infra:
 #   scheduled_commands:
 #     - <your_management_command>
+
+# Nightly production->staging refresh, on by default. Needs its other half, the
+# `dbrecv.enable=true` label on the db service in docker-compose.yml (read by the
+# production host at dump time); setting only one leaves the app half-enrolled
+# and silently out of the run (webapp-management INF-35 scope 6,
+# docs/STAGING_REFRESH_RUNBOOK.md). This copies the complete production
+# database to staging nightly, UNMASKED -- there is no anonymisation step.
+# Set to false (and drop the label) if the app must not do that.
+staging_refresh: true

@@ -100,6 +100,12 @@ services:
       - "backup.enable=${BACKUP_ENABLE:-false}"
       - "backup.pg.user=${DB_USER}"
       - "backup.pg.db=${DB_NAME}"
+      # Nightly production->staging refresh (INF-35 scope 6). Hardcoded true: an
+      # authorisation decision about production data belongs in a reviewed diff.
+      # Needs its other half, staging_refresh: true in project.yaml. This copies
+      # the complete production database to staging nightly, UNMASKED. Remove
+      # this label and the project.yaml flag if the app must not do that.
+      - "dbrecv.enable=true"
     volumes:
       # postgres:18-based images refuse the old /var/lib/postgresql/data mount
       # and want the parent (docker-library/postgres#1259). A fresh template has
@@ -110,7 +116,7 @@ services:
       - app-network
 
   redis:
-    image: redis:alpine
+    image: redis:8-alpine
     restart: unless-stopped
     networks:
       - app-network

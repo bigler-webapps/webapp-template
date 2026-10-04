@@ -189,10 +189,40 @@ their comments, and the four new tests.
 
 # B. Implementation map, filled by the Orchestrator and ADDRESSED TO THE IMPLEMENTER
 
-*Placeholder. The Orchestrator fills the context package, the absolute working directory, the
-progress contract and the preamble block on `git pull`, per `AGENTS.md` -> "Work Order". The pin bumps and the
-lockfile regeneration are package-manager operations and therefore the Orchestrator's. Do not dispatch while this
-placeholder stands.*
+## Context package
+
+The pins, lockfile, CI, compose and config changes are ALREADY DONE (Orchestrator). Your job is the four new tests only. Do not explore broadly; open only the named files.
+
+- **Test 1 (kit integration), new file `frontend/src/kitIntegration.test.jsx`.** Use `checkKitIntegration` from `@micha.bigler/ui-core-micha` (README "Consumer integration check"): `const { findings } = await checkKitIntegration({ i18n, wrapper })`, expect `findings` toEqual `[]`. `i18n` is the default export of `frontend/i18n/index.js` (import it as `../i18n/index.js`; `src/i18n.js` re-exports it). The `wrapper` is a component applying the template's providers: `ThemeProvider` with `theme` from `src/theme.js` plus `AuthProvider` from the kit (see `src/index.jsx`, `src/App.jsx`; the router comes from the kit's check, do not add one unless it demands it). Set `globalThis.IS_REACT_ACT_ENVIRONMENT = true` if the check needs it. Run this check alone in its own test file (it stubs `apiClient`'s adapter).
+- **Test 2 (route integration), new file `frontend/src/AuthRoutesIntegration.test.jsx`.** Model: `survey_app/frontend/src/AuthRoutesIntegration.test.jsx` (read-only sibling; mock `axios` with `vi.hoisted` axios instance, `vi.mock("./components/Header", ...)` to null). Render `<App />` at `/signup` and `/invite/some-uid/some-token` (`window.history.pushState`), `waitFor` a real `form` element in the container. Wrap in `ThemeProvider` with `theme` from `./theme` and import `./i18n`. Mock only the network, never kit components.
+- **Test 3 (user API), edit `backend/users/tests.py`** (currently empty; it is in `pytest.ini` testpaths). View: `backend/users/views.py:10` `UserViewSet(BaseUserViewSet)` with `current_patch_allowed_fields` widened by `is_new`; routed via `backend/users/urls.py` (router prefix `""`, basename `user`). Find the mount prefix in `backend/backend/urls.py`, and read `django_core_micha/auth/views.py` (`BaseUserViewSet`, `current_patch_allowed_fields`, and the detail-route PATCH/DELETE logic of dcm 2.44.2 installed in the backend environment) to determine the exact URL for the own-row detail route. Use DRF `APIClient` with `force_authenticate` as a NON-admin user created with `get_user_model()` (email-based, check `backend/backend/settings.py` for the user model fields). Assertions: PATCH own row `{"is_new": false}` succeeds (2xx and field persisted, via whichever route dcm exposes for the own row, e.g. the "current" action); PATCH of a field outside the allowlist (use a field the serializer in `backend/users/serializers.py` exposes, e.g. `is_staff`/`email` as present) is refused with 403 via the generic detail route; DELETE of the own row is refused with 403. Use `@pytest.mark.django_db`. If the real response differs from the Envelope (e.g. 400 vs 403), report `RESULT: BLOCKED` with the measured value rather than weakening the test.
+- **Test 4 (S112), new file `backend/backend/test_ws_inventory.py`**, copy of `spesix/backend/backend/test_ws_inventory.py` (read-only sibling): `assert_all_consumers_secure(["django_core_micha.notifications.consumers"]) == []`, docstring noting every new consumer module is added there. Also add `backend/test_ws_inventory.py` to `testpaths` in `backend/pytest.ini` (and `users/tests.py` stays).
+
+Do-not-touch: pins, lockfile, workflows, compose, project.yaml, any production code, `src/App.test.jsx`, `test_permission_inventory.py`.
+
+## Target repo working directory (absolute)
+
+`C:/Users/biglmi/Documents/webapps/webapp-template` (frontend tests run in `frontend/`, backend in `backend/`).
+
+## Preamble
+
+> The text above is the COMPLETE spec — the committed WO file's content, not a plan to refine; there
+> is no separate plan file. Read the nearest `AGENTS.md`, the relevant `.codex/skills/<role>/SKILL.md`, and the
+> app `MEMORY.md` ONLY for conventions. Stay in scope; do not touch auth/permissions/deps/schema/CI
+> unless the spec says so; do not update `MEMORY.md`. **Do NOT edit `WORK_ORDERS.md` — the register
+> row and the review verdicts are the orchestrator's alone.** **Your tools are for editing source
+> and test files and for running the tests you wrote — nothing else.** Do NOT install dependencies,
+> touch a lockfile, run a package manager, or tidy up stray files; if something in the repo state
+> blocks you, stop and report it as `RESULT: BLOCKED <reason>` instead of fixing it. Do NOT
+> `git add`/`commit`/`push` — leave every change uncommitted in the working tree for the orchestrator's
+> independent review. WRITE the tests the `Required tests` section calls for AND **RUN the tests you
+> just wrote** (`npx vitest run <file>` in frontend, `pytest <file>` in backend) to confirm they execute
+> and pass — that is the ONLY test run you do (NOT the affected/full suite, NOT any review). The
+> orchestrator re-runs the authoritative set + does the independent review after you finish.
+>
+> Narrate continuously: a `PLAN: <step1> | <step2> | …` line up front, then a single-line
+> `PROGRESS: [<n>/<total>] <present-tense action>` before every relevant action (and `… done` on
+> completion), plus exactly one final `RESULT: DONE|BLOCKED <reason>`.
 
 ---
 
