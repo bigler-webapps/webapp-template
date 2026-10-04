@@ -105,8 +105,13 @@ All measured 2026-10-04 on `main` at `af12a08`. This repo's trunk is `main` (it 
 
 - `webapp-management` `INF-38` (in progress, the old ucm `2.41.3` catch-up) is superseded **for the template** by this
   order's `3.12.0` pin; the template drops out of it.
-- `webapp-management` `CI-13` (in progress: staging pulls its own refresh) carries the refresh mechanism decision 3
-  switches on. Until it lands, `refresh-staging.yml` fails nightly; a new app inherits that state, not a new fault.
+- **The nightly refresh is live.** `webapp-management` `refresh-staging.yml` is green for the opted-in apps (scheduled
+  runs 2026-09-30 to 10-02; on 10-03 and 10-04 only the research-prod/hram leg failed, fixed by `WM-CI-25` and
+  proven by run `37213361336`, checked 2026-10-04). `CI-13`'s row is still in progress, but the mechanism it describes
+  is what the workflow already runs. A new app is included through exactly the two halves this order ships:
+  `staging_refresh: true` (read by `resolve_daily_refresh_matrix` via the app registry) and `dbrecv.enable=true` on
+  `db`. Corrected 2026-10-04 on the Infra lane's word: the first version of this order called `CI-13` a nightly
+  failure risk, which it is not.
 
 ## Scope + non-goals
 
@@ -143,7 +148,6 @@ Non-goals:
 - **First adopter of `checkKitIntegration` and of the auth smoke.** A defect in either surfaces here first; it is
   fixed in the kit or in `workflow-templates`, never worked around in the template.
 - **The refresh copies production data unmasked** to staging, by operator decision, as the fleet does.
-- **`CI-13` open:** the refresh fails nightly until it lands, in every app that opts in.
 - **Manifest bumped, lockfile stale**, the known trap of every bump.
 
 ## Required tests to WRITE (you write them and run YOUR OWN new ones; the Orchestrator's run is the gate)
