@@ -3,7 +3,7 @@
 django-core-micha==2.44.2
 
 # Django stack
-Django==6.1
+Django==6.1.1
 djangorestframework>=3.17.1
 django-cors-headers>=4.9.0
 channels>=4.3.2
