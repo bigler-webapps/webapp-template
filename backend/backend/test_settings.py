@@ -35,7 +35,9 @@ PASSWORD_HASHERS = [
 # Avoid writing test media into the project tree: BASE_DIR may not be
 # writable in a CI container, so uploads would hit PermissionError.
 # A fresh temp dir is always writable and isolated per test session.
-MEDIA_ROOT = tempfile.mkdtemp(prefix="<your-app-slug>-test-media-")
+# The prefix is a literal, not the app-slug placeholder: "<" and ">" are
+# invalid in a Windows path, and nothing needs the prefix to carry the slug.
+MEDIA_ROOT = tempfile.mkdtemp(prefix="app-test-media-")
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
