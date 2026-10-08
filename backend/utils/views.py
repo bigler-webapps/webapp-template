@@ -1,3 +1,5 @@
+import logging
+
 from django.utils.translation import gettext as _
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -5,6 +7,20 @@ from rest_framework.views import APIView
 
 from .models import CookieStatement, PrivacyStatement
 from .serializers import CookieStatementSerializer, PrivacyStatementSerializer
+
+
+logger = logging.getLogger(__name__)
+
+
+def _validate_utf8_upload(uploaded):
+    try:
+        uploaded.seek(0)
+        uploaded.read().decode("utf-8")
+    except UnicodeDecodeError:
+        return False
+    finally:
+        uploaded.seek(0)
+    return True
 
 
 class PrivacyStatementView(APIView):
@@ -17,8 +33,9 @@ class PrivacyStatementView(APIView):
 
         try:
             content = PrivacyStatementSerializer(statement).data.get("content", "")
-        except Exception:
-            content = ""
+        except Exception as exc:
+            logger.error("Error reading privacy statement: %s", exc, exc_info=True)
+            return Response({"filename": statement.file.name, "content": None, "error": "unreadable"})
 
         return Response({"filename": statement.file.name, "content": content})
 
@@ -27,6 +44,11 @@ class PrivacyStatementView(APIView):
         if not uploaded or not uploaded.name.lower().endswith(".md"):
             return Response(
                 {"detail": _("Please upload a .md file.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not _validate_utf8_upload(uploaded):
+            return Response(
+                {"detail": _("The uploaded Markdown file must be UTF-8 decodable.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -52,8 +74,9 @@ class CookieStatementView(APIView):
 
         try:
             content = CookieStatementSerializer(statement).data.get("content", "")
-        except Exception:
-            content = ""
+        except Exception as exc:
+            logger.error("Error reading cookie statement: %s", exc, exc_info=True)
+            return Response({"filename": statement.file.name, "content": None, "error": "unreadable"})
 
         return Response({"filename": statement.file.name, "content": content})
 
@@ -62,6 +85,11 @@ class CookieStatementView(APIView):
         if not uploaded or not uploaded.name.lower().endswith(".md"):
             return Response(
                 {"detail": _("Please upload a .md file.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not _validate_utf8_upload(uploaded):
+            return Response(
+                {"detail": _("The uploaded Markdown file must be UTF-8 decodable.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
