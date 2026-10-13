@@ -28,7 +28,7 @@ jobs:
     # would only fail and spam notifications. New repos created via
     # "Use this template" have is_template=false → deploy runs normally.
     if: ${{ ! github.event.repository.is_template }}
-    runs-on: [self-hosted, netcup]
+    runs-on: [self-hosted, netcup-deploy]
     environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     concurrency:
       group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/main' && 'production' || 'staging' }}
