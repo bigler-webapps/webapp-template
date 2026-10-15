@@ -339,7 +339,7 @@ and CI must cover the complete combined diff from original approved baseline b20
 - Final affected checks: **11 frontend tests passed**, frontend production build passed,
   lint zero errors/20 existing warnings, final Linux Docker production image passed and
   ASGI/psycopg/package-absence smoke passed. Backend source is unchanged from original
-  candidate CI (41 passed); the final exact-candidate full CI remains pending.
+  candidate CI (41 passed); the final exact-candidate results and security substitution are recorded below.
 - Final combined diff from b2018e7 was reviewed concurrently by all six independent configured
   codex/gpt-6-luna CLI reviewers (openai, read-only sandbox, no bypass). Four lenses plus
   ui_review and sec_review completed; source stayed immutable. **2 raised, 0 accepted,
@@ -353,3 +353,40 @@ and CI must cover the complete combined diff from original approved baseline b20
   evidence and the production smoke. No code correction was required.
 - Review totals across both rounds: **5 raised, 0 accepted, worst accepted none**; dispositions
   above preserve each round separately. Exact final source commit and CI follow below.
+
+
+## Final verification and landing — 2026-10-15
+
+Reviewed source commits: initial implementation **89d237f**, approved security extension
+**7e7c30cbcd7fe9df688c1d077774bec183e451db**. The closing commit records results only.
+
+[Exact-candidate run 38759512281](https://github.com/bigler-webapps/webapp-template/actions/runs/38759512281)
+ran on 7e7c30c: **backend 41 passed**, **frontend 5 files / 11 passed** (including both title
+cases), and input validation passed. E2E is intentionally disabled. The security job remained
+queued after more than 30 minutes; inventory showed slot2 offline and the two online runners
+with the required netcup-ci label busy. The same run's backend succeeded on eligible slot3.
+
+**Declared security-only substitution:** `orchestrate-codex` → CI as the test runner,
+WS-GOV-7 fallback 5, permits local execution when the runner queue does not drain in about
+30 minutes. The security equivalents began at 15:54 UTC, after checking the job was still
+queued; source and policy stayed unchanged. The already-green CI jobs were not repeated.
+
+- Gitleaks **8.30.1**, official Linux amd64 image pinned to manifest digest
+  `sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb`:
+  read-only repo mount, `git . --log-opts=HEAD~1..HEAD --redact --verbose --no-banner`.
+  **One own tracked commit scanned, no leaks, exit 0.** No working-tree/.env scan.
+- Python **3.12.12**, isolated Windows audit-tool environment, pip-audit **2.10.1**:
+  `python -m pip_audit -r webapp-template/backend/requirements.txt` from the workspace root.
+  **No known vulnerabilities found, exit 0.** Backend pins are unchanged from the original
+  candidate's green Linux pip-audit; final exact CI backend tests also passed.
+- pnpm **11.5.1**, `pnpm audit --json`: **zero vulnerabilities at every severity**, 486 entries,
+  exit 0; all 67 original frontend audit findings have been removed.
+
+Only after these checks passed was the own lingering run cancelled. Its aggregate conclusion
+is therefore **cancelled**, not green: backend/frontend/validation are green; only security
+was cancelled and replaced by the documented local evidence above. No foreign run, runner
+state, CI workflow or policy was changed. Independent review and production build/ASGI smoke
+remain green as recorded above. No review finding is left open.
+
+Finalize on main with both source commits plus the closing record; delete the own temporary
+ci-test/WT-DEP-1 ref after the main push. No promotion PR or production action is involved.
