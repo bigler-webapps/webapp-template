@@ -9,11 +9,13 @@ every item is re-checked against R1 before it goes).
 
 ## Goal & expected outcome
 
-- Ziel: webapp-template declares and installs only what it uses.
-- Expected outcome: no manifest line without a use; the app runs on the dcm major from
+- Ziel: an app scaffolded from webapp-template starts with only what every app needs; anything
+  else is added by the app when it uses it.
+- Expected outcome: no manifest line without a use; the template runs on the dcm major from
   `DCM-DEPS-3` and on ucm 4.0.0 with exactly the extras and peers it needs, on psycopg 3,
-  with test tooling and orphaned system packages out of the production image; staging works
-  as before.
+  with test tooling out of the production image and without `react-helmet`; a freshly
+  scaffolded app builds its image, boots, and passes its own test suite. (The template has no
+  staging or production deployment of its own — its deploy job skips on the template repo.)
 - Current pins: django-core-micha 2.44.2, ui-core-micha 3.12.0.
 
 ## Estate rules (decided 2026-10-15 — they govern every item in "Scope")
@@ -58,7 +60,11 @@ every item is re-checked against R1 before it goes).
 
 ### Shared-core bump
 
-- dcm to the major released by `DCM-DEPS-3`, with the extras R3 selects; ucm to 4.0.0 (R5).
+- dcm to the major released by `DCM-DEPS-3`; ucm to 4.0.0 (R5).
+- Default extras for a new app (operator decision 2026-10-15): only `scripts`, and only if the
+  template's image or compose files run a dcm CLI script (`generate-env`, `run-dev`,
+  `sync-secrets`, ...); otherwise none. `ai`, `extraction` and `push` are added by an app when it
+  uses the feature — the Celery docs section below gets a sibling sentence saying so.
 
 ### Backend
 
@@ -76,6 +82,9 @@ every item is re-checked against R1 before it goes).
 - `@eslint/js` (devDependency; `eslint.config.js` does not import it)
 - `@mui/system` (direct entry; no import, `@mui/material` brings it)
 - `@testing-library/user-event` (no test uses it)
+- `react-helmet` (operator decision 2026-10-15, template only): `src/pages/Home.jsx` and
+  `src/pages/WelcomePage.jsx` render a native React 19 `<title>` instead of `<Helmet>`, with the
+  same title text; the package leaves `package.json`
 
 ### Docker / repo
 
@@ -91,30 +100,30 @@ every item is re-checked against R1 before it goes).
   require.
 - No behaviour change: this order removes and re-declares; it does not refactor working code
   beyond the named one-site replacements.
-- App code that imports `react-helmet` keeps it in this order (follow-up after this order lands:
-  native `<title>` in the app's own pages).
 - The shared CI (`workflow-templates` `app-ci.yml`) is not changed.
-- Existing apps are not touched — each has its own order
+- Existing apps are not touched — each has its own order (they keep app-side `react-helmet` until
+  their own follow-up).
 
 ## Tier · precondition / gate
 
-- Tier 3: a shared-core bump that removes dependencies the app uses today, the Postgres
-  driver switch, Dockerfile changes.
+- Tier 3: a shared-core bump that removes dependencies the template uses today, the Postgres
+  driver switch, Dockerfile changes — and every app scaffolded afterwards inherits the result.
 - Precondition: blocked until `DCM-DEPS-3` and `UCM-DEP-2` are released.
 
 ## Risks
 
-- psycopg2 -> psycopg 3 changes the driver under the production database; differences show in
-  edge cases (custom type adaptation, server-side cursors, timezone handling).
+- Every future app inherits a mistake here; a missing package shows only when the new app first
+  builds or boots.
+- psycopg2 -> psycopg 3 changes the driver that scaffolded apps will run in production;
+  differences show in edge cases (custom type adaptation, server-side cursors, timezone handling).
 - A removed package was reached through a path the audit missed (string import, plugin entry
   point, management command): import error at boot or on one code path.
 - The ucm 4.0.0 sub-path move: a missed import breaks the frontend build.
-- The dcm major: a dcm feature used without its extra fails at runtime with a named-extra error.
-- Removed system packages: a wheel that links against them fails at import.
+- Native `<title>`: the browser-tab title on the two pages must stay the same text.
 
 ## Required tests to WRITE
 
 - Driver: under the test settings `django.db.connection` uses psycopg 3 (the backend's `Database`
   module is `psycopg`).
-- One-site replacements named in "Scope" keep the existing tests' assertions unchanged; no other
-  new tests — pure removals need none.
+- Titles: `Home` and `WelcomePage` each set the document title to today's text (one case per page).
+- No other new tests — pure removals need none.
