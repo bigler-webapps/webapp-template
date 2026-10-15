@@ -6,6 +6,20 @@ import { fileURLToPath } from 'url';
 const rootDir = fileURLToPath(new URL('.', import.meta.url));
 const fromRoot = (...segments: string[]) => path.resolve(rootDir, ...segments);
 
+// Node >=22's experimental native `localStorage`/`sessionStorage` globals shadow jsdom's own
+// Storage implementation with an incomplete one (missing e.g. `.clear()`), breaking any test
+// that touches `localStorage` directly. Disabling it here (before vitest spawns its test
+// workers, which re-read `NODE_OPTIONS` from the current process env) restores jsdom's own
+// implementation without requiring every invocation to set the flag manually.
+// Gated to `process.env.VITEST` (set by vitest itself) so `vite` dev/build/preview never has
+// this forced on them.
+if (
+  process.env.VITEST &&
+  !process.env.NODE_OPTIONS?.includes('--no-experimental-webstorage')
+) {
+  process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS ?? ''} --no-experimental-webstorage`.trim();
+}
+
 export default defineConfig({
   plugins: [react()],
   test: {
