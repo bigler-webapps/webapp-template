@@ -59,10 +59,6 @@ export default defineConfig({
         )}/$1.js`,
       },
       {
-        find: '@micha.bigler/ui-core-micha',
-        replacement: fromRoot('node_modules', '@micha.bigler', 'ui-core-micha'),
-      },
-      {
         find: 'components',
         replacement: fromRoot('src/components'),
       },

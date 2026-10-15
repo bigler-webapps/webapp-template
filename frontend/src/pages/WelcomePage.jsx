@@ -8,7 +8,6 @@ import {
   updateUserProfile,
 } from "@micha.bigler/ui-core-micha";
 import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet";
 import { Navigate, useNavigate } from "react-router-dom";
 
 const WelcomePage = () => {
@@ -36,9 +35,7 @@ const WelcomePage = () => {
 
   return (
     <WidePage title={t("Welcome.PAGE_TITLE")}>
-      <Helmet>
-        <title>{t("Welcome.PAGE_TITLE")}</title>
-      </Helmet>
+      <title>{t("Welcome.PAGE_TITLE")}</title>
 
       <Typography paragraph variant="h4">
         {t("Welcome.TITLE")}

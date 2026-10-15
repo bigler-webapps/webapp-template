@@ -3,7 +3,6 @@ import React, { useContext } from "react";
 import { Alert, Button, Stack, Typography } from "@mui/material";
 import { AuthContext, WidePage } from "@micha.bigler/ui-core-micha";
 import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet";
 import { Link as RouterLink } from "react-router-dom";
 
 const Home = () => {
@@ -12,9 +11,7 @@ const Home = () => {
 
   return (
     <WidePage title={t("App.NAME")}>
-      <Helmet>
-        <title>{t("Home.PAGE_TITLE")}</title>
-      </Helmet>
+      <title>{t("Home.PAGE_TITLE")}</title>
 
       <Stack spacing={2.5}>
         <Typography variant="h4">{t("Home.TITLE")}</Typography>

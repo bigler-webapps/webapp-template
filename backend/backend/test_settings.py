@@ -16,11 +16,7 @@ if not Path("/.dockerenv").exists():
     DATABASES["default"]["HOST"] = os.environ.get("TEST_DB_HOST", "localhost")
 
 
-# Keep async/task infrastructure deterministic in tests.
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
-CELERY_BROKER_URL = "memory://"
-CELERY_RESULT_BACKEND = "cache+memory://"
+# Keep channel infrastructure deterministic in tests.
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",

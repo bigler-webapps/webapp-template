@@ -9,7 +9,7 @@ ARG VITE_APP_MUI_LICENSE_KEY
 ENV VITE_APP_MUI_LICENSE_KEY=$VITE_APP_MUI_LICENSE_KEY
 
 # Pin pnpm version to the one declared in frontend/package.json
-RUN corepack enable && corepack prepare pnpm@11.1.3 --activate
+RUN corepack enable && corepack prepare pnpm@11.5.1 --activate
 
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml frontend/.npmrc ./
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
@@ -65,6 +65,9 @@ COPY --chown=deploy:deploy backend/ ./
 # skips the frontend_build stage entirely and stops here. ---
 FROM backend_base AS backend_test
 
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -r requirements-test.txt
+
 
 # --- Stage 3b: final deployed image — adds frontend static + collectstatic ---
 FROM backend_base AS final
@@ -84,11 +87,10 @@ ENV ENV_TYPE=local
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
-# Several worker processes instead of a single daphne, so concurrent requests
+# Several worker processes, so concurrent requests
 # use more than one of the host's cores (each worker has its own GIL). Memory,
 # not cores, is the binding constraint -- GUNICORN_WORKERS defaults to 2 and is
-# overridable without a rebuild. daphne stays installed in requirements.txt so
-# rollback is one line.
+# overridable without a rebuild.
 # uvicorn's ProxyHeadersMiddleware only trusts X-Forwarded-* from peers
 # matching --forwarded-allow-ips, which defaults to 127.0.0.1 -- currently
 # inert since Traefik reaches this container over the `proxy` docker network,
