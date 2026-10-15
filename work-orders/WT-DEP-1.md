@@ -94,10 +94,41 @@ every item is re-checked against R1 before it goes).
 
 - `pytest-cov`: stays only if the shared CI invokes coverage for template-derived apps; otherwise it goes with `.coveragerc`
 
+## Approved security extension — 2026-10-15
+
+The operator approved the concrete security plan before finalizing: "Ja, bitte so mit
+swissqrbill umsetzen" (the swissqrbill clause belongs to JG only). For this template, resolve
+all 67 current pnpm audit findings (31 high, 30 moderate, 6 low) across these 13 package groups.
+The following are minimum safe targets for all currently reported severities:
+
+| Package | Existing resolution | Minimum safe target |
+|---|---|---|
+| axios | 1.16.1 | 1.20.0 |
+| form-data | 4.0.5 | 4.0.6 |
+| react-router | 7.18.0 | 7.18.2, with react-router-dom 7.18.2 |
+| undici | 7.25.0 | 7.29.1 |
+| brace-expansion | 1.1.14 / 5.0.6 | 1.1.21 / 5.0.12 |
+| nanoid | 3.3.12 | 3.3.18 |
+| postcss | 8.5.15 | 8.5.23 |
+| browserslist | 4.28.2 | 4.28.7 |
+| baseline-browser-mapping | 2.10.31 | 2.11.0 |
+| source-map-js | 1.2.1 | 1.2.2 |
+| @babel/core | 7.29.0 | 7.29.6 (7.29.1 is not published) |
+| vitest | 4.1.9 | 4.1.11 |
+| @vitest/mocker | 4.1.9 | 4.1.11, with the matching Vitest family |
+
+The existing app and parent ranges permit these fixes. Update the direct dependencies and
+refresh the named transitives within their existing major lines; matching Vitest siblings
+and dependencies required by these approved patched parents are included. Preserve unrelated
+resolved versions. Keep Node 24, pnpm 11.5.1, the release-age policy and build-script allowlist.
+No new application behavior, backend change, shared-core change, CI-policy change, or broad
+reachability investigation is authorized by this extension. Required additional test writing:
+none; this is dependency metadata and lockfile work, with the existing affected tests retained.
+
 ## Non-goals / do-not-touch
 
-- No version upgrade of a package that stays, apart from the dcm/ucm bump and what R4, R7 and R8
-  require.
+- No version upgrade of a package that stays, apart from the dcm/ucm bump, what R4, R7 and R8
+  require, and the explicitly approved security extension above.
 - No behaviour change: this order removes and re-declares; it does not refactor working code
   beyond the named one-site replacements.
 - The shared CI (`workflow-templates` `app-ci.yml`) is not changed.
@@ -199,7 +230,7 @@ State `PLAN: ...` initially, `PROGRESS: [n/total] ...` before relevant actions (
 
 ## Execution directive and authority
 
-Gate #1 is recorded in WORK_ORDERS.md at b2018e7; Part A is unchanged since that commit.
+Original Gate #1 is recorded in WORK_ORDERS.md at b2018e7. Part A now additionally carries the operator-approved security extension; its separate approval is recorded below.
 User handover on 2026-10-15 authorizes ucm 4.0.1 instead of Envelope 4.0.0; no other scope change.
 Native dispatch requests codex/gpt-6-luna with fresh context. Accepted native agent: /root/wt_orchestrator/wt_implementer, requested model gpt-6-luna, high reasoning, fork_turns=none. Effective provider metadata not exposed.
 Native cwd bootstrap exception: inherited workspace root
@@ -254,4 +285,71 @@ commit implementation then register landing SHA in a second documentation commit
   Regression, duplication, UI and security returned no findings.
 - Orchestrator targeted security pass: no auth/permission changes, request exposure changes,
   migrations, workflow changes or secret reads. Exact auth transitive pins retained.
-- Candidate CI: pending; the final landing register will record its run and reviewed source SHA.
+- Candidate CI: **SUCCESS**, run [38753985650](https://github.com/bigler-webapps/webapp-template/actions/runs/38753985650)
+  on reviewed source **89d237f6c80b835431cd76b799c96ae5bd533f40**: backend **41 passed**,
+  frontend **11 passed**, input validation and security jobs green; E2E intentionally skipped.
+  pip-audit reports no known vulnerabilities. The report-only pnpm audit reports **67** existing
+  advisories (**31 high, 30 moderate, 6 low**), so a green security job is not a clean audit.
+  This baseline blocked the original candidate; the subsequently approved security extension requires remediation before landing.
+
+
+## Audit baseline identified before the security extension
+
+The [report-only pnpm audit step](https://github.com/bigler-webapps/webapp-template/actions/runs/38753985650/job/116487439979#step:9:1)
+reports existing advisories. Representative high severity anchors: form-data 4.0.5
+(GHSA-hmw2-7cc7-3qxx, CRLF injection); undici 7.25.0 (GHSA-vmh5-mc38-953g, TLS validation
+bypass); brace-expansion 1.1.14 (GHSA-3jxr-9vmj-r5cp, DoS); react-router 7.18.0
+(GHSA-qwww-vcr4-c8h2, RSC-mode CSRF); nanoid 3.3.12 (GHSA-28wg-ghj8-5hjv, non-secure
+generator loop). Each exact resolved version is unchanged between approved baseline b2018e7
+and source candidate 89d237f. Axios 1.16.1 and source-map-js 1.2.1 are also unchanged.
+The Envelope prohibits retained-package upgrades; no advisory remediation was attempted.
+This list records audit claims, not a new application-reachability investigation.
+
+Extraction cross-check: the template's inherited AbstractUserProfile and BaseUserSerializer
+have no avatar/ImageField/SafeImageField; no template code consumes SafeImageField. Generic
+messaging URLs/apps are installed but the template registers no MessagingPolicy/scope and has
+no messaging-image UI. No extraction extra is therefore needed under the approved default.
+
+
+## Expanded Gate #1 — 2026-10-15
+
+The operator explicitly approved the security remediation plan before finalization. The
+67-advisory baseline is not accepted as a residual risk; the named dependency fixes in the
+new Part A extension supersede the original no-upgrades restriction only for that scope.
+This is Orchestrator-owned repo-state work; no new feature implementer is dispatched. Review
+and CI must cover the complete combined diff from original approved baseline b2018e7.
+
+
+## Security extension implementation evidence
+
+- Direct floors are axios ^1.20.0, react-router-dom ^7.18.2 and vitest ^4.1.11. Resolved
+  versions match those minimum patches. All remaining named targets resolve at their approved
+  minimums, including Babel 7.29.6, both brace-expansion branches and the Vitest 4.1.11 family.
+- pnpm 11.5.1 resolved from the original lockfile in isolated scratch metadata with temporary
+  exact constraints. Unrelated chart children reselect 5.2.0, @types/d3-shape 3.1.8,
+  @babel/runtime 7.29.2 and use-sync-external-store 1.6.0 are preserved. No permanent overrides,
+  new direct packages, policy changes or package-manager version changes remain. Temporary
+  override metadata was removed; original published peer ranges of unchanged packages and
+  declared importer ranges were restored before successful frozen installation.
+- Additional resolutions are limited to required patched-parent children: Babel generator,
+  parser/types/helpers; browserslist compatibility databases; form-data's hasown; and the
+  matching Vitest family. Obsolete tinyglobby leaves with the patched Vitest dependency graph.
+- Final local pnpm audit: **zero info, low, moderate, high or critical vulnerabilities**
+  (486 dependency entries). The 67-advisory original baseline is fully remediated.
+- Final affected checks: **11 frontend tests passed**, frontend production build passed,
+  lint zero errors/20 existing warnings, final Linux Docker production image passed and
+  ASGI/psycopg/package-absence smoke passed. Backend source is unchanged from original
+  candidate CI (41 passed); the final exact-candidate full CI remains pending.
+- Final combined diff from b2018e7 was reviewed concurrently by all six independent configured
+  codex/gpt-6-luna CLI reviewers (openai, read-only sandbox, no bypass). Four lenses plus
+  ui_review and sec_review completed; source stayed immutable. **2 raised, 0 accepted,
+  worst accepted none** in this combined round. Regression/duplication/UI/security clean.
+  Envelope's Babel-helper concern is rejected by the actual published chain: core 7.29.6
+  requires generator ^7.29.6; resolved generator 7.29.8 requires types ^7.29.8; types 7.29.8
+  requires string-parser and validator-identifier ^7.29.7. These are approved required children.
+  Tests lens's structural-removal objection is rejected: Part A requires title-text parity and
+  selected driver identity, both tested using real imports; it explicitly forbids additional
+  tests for pure removals. Helmet/psycopg2 removal is additionally checked by build/manifest
+  evidence and the production smoke. No code correction was required.
+- Review totals across both rounds: **5 raised, 0 accepted, worst accepted none**; dispositions
+  above preserve each round separately. Exact final source commit and CI follow below.

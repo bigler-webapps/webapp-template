@@ -9,15 +9,18 @@
     "@micha.bigler/ui-core-micha": "4.0.1",
     "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.11",
-    "axios": "^1.16.1",
+    "axios": "^1.20.0",
     "i18next": "^26.3.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-i18next": "^17.0.8",
-    "react-router-dom": "^7.16.0"
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@vitejs/plugin-react-swc": "^4.3.1",
     "eslint": "^10.4.1",
     "eslint-plugin-react": "^7.37.5",
@@ -25,10 +28,7 @@
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
     "vite": "^8.0.16",
-    "vitest": "^4.1.8",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2"
+    "vitest": "^4.1.11"
   },
   "scripts": {
     "dev": "vite",
