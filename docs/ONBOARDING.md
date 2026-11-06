@@ -88,7 +88,6 @@
 ## Phase 3 — Umfeld-Registrierung — Checkliste
 
 - [ ] **GitHub-Repo** in der Org (aus/angeglichen an Template), Default-Branch + `develop` vorhanden.
-- [ ] **GitHub Apps**: add the new repository to every selected-repository App installation (Renovate, Claude, registry reader) with one command from webapp-management, run by the operator with their own `gh` login: dry run `python .github\scripts\onboard_repo_apps.py <repo>`, then the same with `--apply`. Details: webapp-management `docs/onboard-repo-apps.md` (WM-INF-107).
 - [ ] **GitHub-Environments** `staging` + `production` angelegt.
 - [ ] **Secrets** — eine Ebene pro Secret (`env`-variabel → env; geteilt → repo via `target_scope: repo`).  
   `sync-secrets --server --secret-target <env>` pro Environment + repo-level;  
