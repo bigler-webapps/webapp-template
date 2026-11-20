@@ -1,14 +1,7 @@
+# All text is LF in the working tree, whatever core.autocrlf says on the Windows working copy;
+# Windows-only scripts keep CRLF (WS-GOV-105).
+* text=auto eol=lf
 *.bat text eol=crlf
 *.cmd text eol=crlf
-*.css text eol=lf
-*.html text eol=lf
-*.js text eol=lf
-*.jsx text eol=lf
-*.json text eol=lf
-*.md text eol=lf
-*.py text eol=lf
-*.sh text eol=lf
-*.svg text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
+*.ps1 text eol=crlf
 work-orders/register.jsonl merge=union
