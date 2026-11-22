@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "wo": "WT-SYNC-2",
+  "environment": {
+    "mode": "isolated",
+    "controller_module": "frontend/tests/test-management-controller.js"
+  },
+  "actors": {
+    "supervisor": {
+      "template": "supervisor"
+    },
+    "collaborator": {
+      "template": "collaborator"
+    }
+  },
+  "fixtures": {
+    "managed-user": {
+      "name": "managed-user",
+      "parameters": {
+        "supervisor": {
+          "actor": "supervisor"
+        }
+      },
+      "exports": {
+        "username": "state.username"
+      }
+    }
+  },
+  "criteria": [
+    {
+      "id": "WT-SYNC-2-F1",
+      "type": "F",
+      "actor": "supervisor",
+      "fixture": "managed-user",
+      "route": "/account?tab=users",
+      "steps": [
+        {
+          "do": "expect",
+          "kind": "visible",
+          "text": "Alle Benutzer"
+        },
+        {
+          "do": "api_expect",
+          "path": "/api/users/",
+          "array": ".",
+          "where_field": "username",
+          "where_from": "username",
+          "field": "role",
+          "equals": "none"
+        }
+      ]
+    },
+    {
+      "id": "WT-SYNC-2-F2",
+      "type": "F",
+      "spec": "frontend/tests/test-management-profiles.spec.js"
+    },
+    {
+      "id": "WT-SYNC-2-F3",
+      "type": "F",
+      "scenario": "password_recovery",
+      "template": "supervisor",
+      "locale": "de-CH",
+      "routes": {
+        "reset_request": "/reset-request-password"
+      }
+    }
+  ]
+}

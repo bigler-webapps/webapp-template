@@ -16,3 +16,14 @@
 - `git checkout/restore/reset --hard/clean`, force-push, `gh secret set`,
   `gh auth token` und direkte `proton-pass-cli`-Aufrufe sind in
   `.claude/settings.json` gesperrt (hartes Enforcement).
+
+## Tests und isolierte Akzeptanz
+
+Vom Workspace-Root aus:
+
+```sh
+python -I .claude/scripts/tests.py --repo <repo> [--scope backend|backend_test_management|frontend]
+python -I .claude/scripts/acceptance.py --repo <repo> --wo <ID>
+```
+
+Nach dem Kopieren die Identity in `test-management.consumer.json` durch den App-Slug ersetzen.

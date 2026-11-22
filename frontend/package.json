@@ -6,7 +6,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fontsource/dm-sans": "^5.2.8",
-    "@micha.bigler/ui-core-micha": "4.0.1",
+    "@micha.bigler/ui-core-micha": "4.40.0",
     "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.11",
     "axios": "^1.20.0",
@@ -18,6 +18,7 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

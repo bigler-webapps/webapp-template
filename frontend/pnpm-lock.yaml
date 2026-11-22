@@ -18,8 +18,8 @@ importers:
         specifier: ^5.2.8
         version: 5.2.8
       '@micha.bigler/ui-core-micha':
-        specifier: 4.0.1
-        version: 4.0.1(5617aba4ce62e4d9dd16f952c08d4bc6)
+        specifier: 4.40.0
+        version: 4.40.0(5617aba4ce62e4d9dd16f952c08d4bc6)
       '@mui/icons-material':
         specifier: ^7.3.11
         version: 7.3.11(@mui/material@7.3.11(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.7))(@types/react@19.2.14)(react@19.2.7))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(@types/react@19.2.14)(react@19.2.7)
@@ -48,6 +48,9 @@ importers:
         specifier: ^7.18.2
         version: 7.18.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
     devDependencies:
+      '@playwright/test':
+        specifier: 1.63.0
+        version: 1.63.0
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -138,7 +141,7 @@ packages:
     resolution: {integrity: sha512-67oXFAYr2cDLDVGLXTEABjdBJZ6drElUSI7WKp70NrpyISso3plG9SAGEF6y7zbha/wOzUByWWTJvEDVNIUGcA==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': 7.29.6
+      '@babel/core': ^7.0.0
 
   '@babel/helper-string-parser@7.27.1':
     resolution: {integrity: sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA==}
@@ -378,22 +381,22 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@micha.bigler/ui-core-micha@4.0.1':
-    resolution: {integrity: sha512-rJoGgtfoBGyoF+k+DBajnLebJv23p/tLKhsjzxb6KkE00LBhe5GSH796JIWi1KE4PhazBk8iz1+22TZDu32xEQ==}
+  '@micha.bigler/ui-core-micha@4.40.0':
+    resolution: {integrity: sha512-hDaWE36S1a8ak9H++CdKzsbTWYopfROAdEK1RlyOp8RbUjWfxoTqT2VZWEvkMKtI9d61R/tFx+ydIADrrNoXdQ==}
     peerDependencies:
       '@emotion/react': ^11.14.0
       '@emotion/styled': ^11.14.1
       '@mui/icons-material': ^7.3.11
       '@mui/material': ^7.3.11
       '@mui/x-charts': ^8.0.0
-      axios: 1.20.0
+      axios: ^1.16.1
       i18next: '>= 26.2.0'
       qrcode.react: ^4.2.0
       react: ^19.2.6
       react-dom: ^19.2.6
       react-i18next: ^16.3.5 || ^17.0.0
       react-markdown: ^10.1.0
-      react-router-dom: 7.18.2
+      react-router-dom: ^7.15.1
       remark-gfm: ^4.0.1
     peerDependenciesMeta:
       '@mui/x-charts':
@@ -530,6 +533,11 @@ packages:
 
   '@oxc-project/types@0.133.0':
     resolution: {integrity: sha512-KzkdCd6Uxqnf6l3HOw1xfatAlUURA0g14cvBYFyJ5SaNOQbOUvBr9PKArcPcrNIeRsBdgcUzOGrhKveVpvOIGA==}
+
+  '@playwright/test@1.63.0':
+    resolution: {integrity: sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
@@ -1817,6 +1825,16 @@ packages:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
 
+  playwright-core@1.63.0:
+    resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.63.0:
+    resolution: {integrity: sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -2125,7 +2143,7 @@ packages:
     resolution: {integrity: sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w==}
     hasBin: true
     peerDependencies:
-      browserslist: 4.28.7
+      browserslist: '>= 4.21.0'
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -2641,7 +2659,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@micha.bigler/ui-core-micha@4.0.1(5617aba4ce62e4d9dd16f952c08d4bc6)':
+  '@micha.bigler/ui-core-micha@4.40.0(5617aba4ce62e4d9dd16f952c08d4bc6)':
     dependencies:
       '@emotion/react': 11.14.0(@types/react@19.2.14)(react@19.2.7)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.7))(@types/react@19.2.14)(react@19.2.7)
@@ -2819,6 +2837,10 @@ snapshots:
     optional: true
 
   '@oxc-project/types@0.133.0': {}
+
+  '@playwright/test@1.63.0':
+    dependencies:
+      playwright: 1.63.0
 
   '@popperjs/core@2.11.8': {}
 
@@ -4166,6 +4188,12 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.4: {}
+
+  playwright-core@1.63.0: {}
+
+  playwright@1.63.0:
+    dependencies:
+      playwright-core: 1.63.0
 
   possible-typed-array-names@1.1.0: {}
 

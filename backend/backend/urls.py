@@ -15,6 +15,7 @@ urlpatterns = [
     # Only mount /accounts/ if there's a deliberate backwards-compat reason
     # — document the reason here.
     path("api/", include("django_core_micha.api_urls")),
+    path("api/privacy/", include("django_core_micha.privacy.urls")),
     path("api/users/", include("users.urls")),
     path("api/utils/", include("utils.urls")),
     path(
@@ -34,5 +35,5 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += [
-    re_path(r"^.*$", spa_index_view, name="spa-entry"),
+    re_path(r"^(?!api(?:/|$)).*$", spa_index_view, name="spa-entry"),
 ]

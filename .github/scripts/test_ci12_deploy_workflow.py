@@ -24,9 +24,12 @@ class CI12DeployWorkflowTests(unittest.TestCase):
             MAIN_WORKFLOW.index("actions/deploy-app@"),
         )
 
-    def test_both_pins_are_v2_9_0(self):
-        self.assertIn("actions/publish-backend-image@v2.9.0", MAIN_WORKFLOW)
-        self.assertIn("actions/deploy-app@v2.9.0", MAIN_WORKFLOW)
+    def test_action_pins_match_estate_standard(self):
+        # publish-backend-image by tag, deploy-app by commit SHA (estate standard).
+        self.assertIn("actions/publish-backend-image@v2.17.0", MAIN_WORKFLOW)
+        self.assertIn(
+            "actions/deploy-app@788473beb2868c82d3a1dafb32076419119ab9ef", MAIN_WORKFLOW
+        )
 
     def test_main_yml_grants_packages_write(self):
         """The most likely slip across eleven repos, per the WO's own risk

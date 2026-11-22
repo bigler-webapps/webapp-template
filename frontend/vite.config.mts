@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -23,6 +24,8 @@ if (
 export default defineConfig({
   plugins: [react()],
   test: {
+    // Playwright acceptance specs run through acceptance.py, not Vitest.
+    exclude: [...configDefaults.exclude, 'tests/test-management-*.spec.js'],
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.js',

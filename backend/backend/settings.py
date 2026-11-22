@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from .privacy_manifest import build_dcm_privacy, default_legal_reader_origin
+
 from django_core_micha.settings.settings_base import *  # noqa: F403,F401
 
 REST_FRAMEWORK = {
@@ -14,11 +16,15 @@ PROJECT_NAME = env("PROJECT_NAME", default="Project Template App")  # noqa: F405
 
 LOCAL_APPS = [
     "allauth.headless",
+    "django_core_micha.privacy",
     "users",
     "utils",
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS  # noqa: F405
+
+LEGAL_READER_ORIGIN = env("LEGAL_READER_ORIGIN", default=default_legal_reader_origin(ENV_TYPE))  # noqa: F405
+DCM_PRIVACY = build_dcm_privacy(LEGAL_READER_ORIGIN, globals().get("SESSION_COOKIE_NAME", "sessionid"), globals().get("CSRF_COOKIE_NAME", "csrftoken"))
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

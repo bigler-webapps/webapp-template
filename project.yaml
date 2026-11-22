@@ -5,6 +5,16 @@
 #   - container_prefix: prefix for container names (e.g. "myapp" → myapp_backend_1)
 #   - image_name: full image path for ghcr.io or other registry
 
+# replace webapp-template with your container_prefix
+tests:
+  backend:
+    command: docker exec webapp-template_local-backend-1 pytest -q -p no:cacheprovider --ds=backend.test_settings
+  backend_test_management:
+    command: docker exec webapp-template_local-backend-1 pytest -q -p no:cacheprovider --ds=backend.test_management_test_settings users/test_test_management_adapter.py users/test_test_management_urls.py tests/test_security_settings.py
+  frontend:
+    command: node node_modules/vitest/vitest.mjs run
+    cwd: frontend
+
 project_name: "<your-app-slug>"             # e.g. "kerzenziehen", "jg-ferien"
 container_prefix: "<your-prefix>"           # e.g. "kz", "jg"
 image_name: "ghcr.io/bigler-webapps/<your-app>-backend"  # REQUIRED: replace <your-app> before first deploy; literal placeholder causes generate-env to fail-loud

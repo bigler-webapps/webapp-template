@@ -1,0 +1,71 @@
+# Replace the frontend build mount if your app uses a different build path.
+# Standalone configuration. Never merge this file with the ordinary local stack.
+# run-dev must prove isolation before running migrations or enabling management.
+services:
+  backend:
+    image: ${TEST_MANAGEMENT_IMAGE:?missing isolated image}
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "-m", "django_core_micha.test_management.isolated_entrypoint"]
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: backend.local_test_management_settings
+      ENV_TYPE: ${ENV_TYPE:?missing original environment identity}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${TEST_MANAGEMENT_DATABASE:?missing isolated database name}
+      DB_USER: test_management
+      DB_PASSWORD: ${TEST_MANAGEMENT_DATABASE_PASSWORD:?missing isolated database password}
+      DJANGO_SECRET_KEY: ${TEST_MANAGEMENT_DJANGO_SECRET:?missing isolated application secret}
+      TEST_MANAGEMENT_INSTANCE_ID: ${TEST_MANAGEMENT_INSTANCE_ID:?missing instance ID}
+      TEST_MANAGEMENT_CONTROLLER_TOKEN: ${TEST_MANAGEMENT_CONTROLLER_TOKEN:?missing controller token}
+      FRONTEND_BUILD_DIR: /app/frontend_host/build_current
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./backend:/app/backend:ro
+      - ./frontend/build_current:/app/frontend_host/build_current:ro
+      - type: volume
+        source: media
+        target: /app/backend/media
+        volume:
+          nocopy: true
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - isolated
+
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${TEST_MANAGEMENT_DATABASE:?missing isolated database name}
+      POSTGRES_USER: test_management
+      POSTGRES_PASSWORD: ${TEST_MANAGEMENT_DATABASE_PASSWORD:?missing isolated database password}
+    volumes:
+      - type: volume
+        source: database
+        target: /var/lib/postgresql
+        volume:
+          nocopy: true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_management -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks:
+      - isolated
+
+networks:
+  isolated:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${TEST_MANAGEMENT_SUBNET:?missing isolated network subnet}
+
+volumes:
+  database: {}
+  media: {}
+

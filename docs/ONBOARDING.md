@@ -17,6 +17,13 @@
 
 ---
 
+## Template-Werte ersetzen
+
+- `test-management.consumer.json`: Identity durch den App-Slug ersetzen.
+- `project.yaml`: in den Testbefehlen `webapp-template` durch den gewählten `container_prefix` ersetzen.
+- Test-Management-Adapter: Account-Vorlagen und synthetisches Fixture an die App und ihre Berechtigungen anpassen.
+- `backend/backend/privacy_manifest.py`: App- und Site-Slug, Verantwortliche, Kontakt und die tatsächlichen Dienste und Dokumente ersetzen.
+
 ## Phase 1 — Deploy funktioniert (Plattform-Schicht)
 
 ### `.github/workflows/`
