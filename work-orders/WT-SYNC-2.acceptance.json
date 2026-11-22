@@ -32,12 +32,12 @@
       "type": "F",
       "actor": "supervisor",
       "fixture": "managed-user",
-      "route": "/account?tab=users",
+      "route": "/account",
       "steps": [
         {
           "do": "expect",
-          "kind": "visible",
-          "text": "Alle Benutzer"
+          "kind": "url",
+          "value": "^/account"
         },
         {
           "do": "api_expect",

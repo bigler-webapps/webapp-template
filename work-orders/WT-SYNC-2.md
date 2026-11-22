@@ -204,11 +204,21 @@ Configured `implementation` entry via `run-worker.py --role implementation --wri
 
 ## Completion
 
-Status: BLOCKED at the acceptance gate. Code and docs are complete and committed locally (not pushed); isolated acceptance F1-F3 has NOT passed, backend scopes could not run.
+
+<!-- acceptance:begin -->
+Acceptance (isolated, built frontend)
+
+| ID | Type | Status | Run time | Evidence | Reason |
+|---|---|---|---|---|---|
+| WT-SYNC-2-F1 | F | pass | 2026-11-22 12:37 | .claude/scratch/acceptance-WT-SYNC-2 @1d6c76a+fedd089a |  |
+| WT-SYNC-2-F2 | F | pass | 2026-11-22 12:37 | .claude/scratch/acceptance-WT-SYNC-2 @1d6c76a+fedd089a |  |
+| WT-SYNC-2-F3 | F | pass | 2026-11-22 12:37 | .claude/scratch/acceptance-WT-SYNC-2 @1d6c76a+fedd089a |  |
+<!-- acceptance:end -->
+Status: in-review. Isolated acceptance F1-F3 PASS through `acceptance.py` (table above). Backend scopes could not run locally (no stack). The post-review fixes (STATIC_ROOT, audit-actor allow-list, F1 protocol) were not independently reviewed. The round-2 envelope blocker "acceptance not green" is now resolved by this run; it was not re-reviewed.
 
 - Implementation: configured implementer `gpt-6.1-terra` (level raised from medium to high for Tier 3 breadth). The first single dispatch ended `RESULT: BLOCKED` after changing only `main.yml`; the work was redone as three chunks (A inventory/pins/privacy backend/scopes/CI, B test-management backend, C frontend/controller/protocol). Hook canary command was not found in the sandbox: coverage unverified. Orchestrator additions: lockfile regeneration, `users` migration 0006 (missed by chunk A), `@playwright/test` 1.63.0 plus `frontend/playwright.config.js`, `vite.config.mts` Vitest exclude for the Playwright spec, CI-12 test updated to the new pins.
 - Inventory: `work-orders/WT-SYNC-2.inventory.md` (final; kerzenziehen named in Part A has no adapter, Kira and innoservice were used as references).
 - Tests, evidence: `tests.py --scope frontend` PASS (14 tests, run 20261122-083247); CI-12 structural test OK (6). `backend` and `backend_test_management`: BLOCKED (exit 2, the template has no running local stack: container_prefix/ports are placeholders). Written but never executed: privacy adoption test, settings isolation test, adapter tests incl. the WS-GOV-121 sentinel, F2 permission test.
-- Acceptance: `acceptance.py --validate-only` valid (3 criteria). The run is BLOCKED: `run-dev --test-management` starts the isolated instance (frontend built into `build_current` first) and then reports "The isolated database migration failed." The tool hides the migration output; `manage.py check` passes on ordinary and test-management unit settings with the shared-core venv; `migrate` and `makemigrations` probes are hook-denied. Cause unknown. Orphan exited containers `webapp-template-tm-*` (3 instances) remain; `--test-management-stop` refuses them ("identity or state failed verification").
+- Acceptance: F1-F3 PASS. Causes fixed on the way: (1) migrate failed on `staticfiles.E002` (template `STATIC_ROOT` equals the build static dir that the isolated settings also put in `STATICFILES_DIRS`; fix: own `STATIC_ROOT` in `local_test_management_settings.py`); the run-dev diagnostics hide migration output, which made this opaque (dcm gap). (2) `close` 500 `cleanup_failed`: Django lists every SET_NULL field regardless of rows and the allow-list label was wrong; fix: count only fields with real rows and allow `django_core_micha_auditlog.auditevent.actor`. (3) F1: the Users tab needs MFA for supervisors; F1 now checks the `/account` URL plus the API role of the fixture user. Leftover exited containers the operator can remove: `webapp-template-tm-*` (21b658a8, cbffaaba, 1ac7eb3d, 731af6f0, 8edd3ada, b619a2d7, f3a0883).
 - CI proof: `ci-proof.py push` refused (diff changes `.github/`, agent-written workflow code needs the operator). Workflow edits: `publish-backend-image@v2.17.0`, `deploy-app` by SHA, `is_template` guard kept, `auth-smoke` kept (restored after review).
 - Review: codex/gpt-6.1-terra (envelope, regression, sec_review, ui_review), codex/gpt-6-luna (duplication), tests lens gpt-6.1-terra. Round 1: 10 raised. Accepted and fixed: stale inventory, `auth-smoke` removal, controller hard-coded identity, loose CI pin test. Round 2 (closing): envelope blocker = acceptance not green (genuine, the open gate); tests: isolation test never asserts a rejected marker, privacy routing test fully mocked; ui_review: French legal links. Carried: 4 test-depth defects (marker rejection, privacy endpoint depth, adapter update/delete/recover and unexpected related data, mocked privacy routing). Rejected: French legal links point to the English document for `fr`, as in the Kira reference (reader publishes de/en).

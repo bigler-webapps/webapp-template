@@ -29,6 +29,9 @@ ROOT_URLCONF = "backend.test_management_urls"
 _build = Path(os.environ["FRONTEND_BUILD_DIR"])  # noqa: F405
 TEMPLATES[0]["DIRS"] = [_build] + TEMPLATES[0]["DIRS"]  # noqa: F405
 STATICFILES_DIRS = [_build / "static"]
+# settings.py points STATIC_ROOT at the build's static folder when FRONTEND_BUILD_DIR is set;
+# Django forbids that folder in STATICFILES_DIRS (staticfiles.E002), so collect elsewhere.
+STATIC_ROOT = BASE_DIR / "staticfiles"  # noqa: F405
 
 # In DEBUG mode the application's ordinary URL configuration serves MEDIA_ROOT
 # directly; the isolated profile must exercise the protected download routes.

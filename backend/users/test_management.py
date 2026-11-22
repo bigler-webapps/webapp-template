@@ -16,6 +16,7 @@ from django_core_micha.test_management.protocol import AdapterAccountResult
 # Replace these account templates and the managed-user fixture for your app.
 TEMPLATES = ("supervisor", "collaborator")
 ALLOWED_MODELS = {"auth.user", "users.userprofile", "account.emailaddress", "account.emailconfirmation"}
+ALLOWED_FIELD_UPDATES = {("django_core_micha_auditlog.auditevent", "actor")}
 
 
 def fail(code, message, status=400):
@@ -112,7 +113,14 @@ class TemplateTestManagementAdapter:
     def _delete_user(self, user):
         collector = _Collector(using=user._state.db or "default")
         collector.collect([user])
-        if {model._meta.label_lower for model in collector.data} - ALLOWED_MODELS or collector.field_updates:
+        # Login writes audit events; deleting the user only clears their actor (SET_NULL), nothing else may change.
+        # Django lists every SET_NULL field pointing at the user; only fields with real rows count.
+        updated = {
+            (field.model._meta.label_lower, field.name)
+            for (field, _value), batches in collector.field_updates.items()
+            if any(len(list(batch)) for batch in batches)
+        }
+        if {model._meta.label_lower for model in collector.data} - ALLOWED_MODELS or updated - ALLOWED_FIELD_UPDATES:
             fail("cleanup_failed", "User has unexpected related data.", 500)
         for session in Session.objects.all():
             try:
