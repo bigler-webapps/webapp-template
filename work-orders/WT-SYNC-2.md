@@ -101,3 +101,5 @@
 - The acceptance protocol with F1-F3, run through `acceptance.py`.
 
 ## Gate record
+
+Gate #1 approved by the operator 2026-11-22 (AskUserQuestion: "Freigeben + Übergabetext").
