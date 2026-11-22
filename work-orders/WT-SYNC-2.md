@@ -103,3 +103,101 @@
 ## Gate record
 
 Gate #1 approved by the operator 2026-11-22 (AskUserQuestion: "Freigeben + Übergabetext").
+
+---
+
+## B. Implementation map — filled by the Orchestrator — ADDRESSED TO THE IMPLEMENTER
+
+### Target repo working directory (absolute)
+
+`C:/Users/Micha Bigler/Documents/webapps/webapp-template` (branch `main`, HEAD 37e6117). Write only inside this repo. NEVER edit any other repo; the reference apps below are read-only.
+
+### Context package
+
+Work from this package; do not explore broadly from scratch; open only the named files to verify. If you must dig deeper, use a read-only sub-agent.
+
+**Reference apps (read-only patterns, both completed WS-GOV-112).** Use `Kira` and `innoservice` (kerzenziehen named in Part A has NO adapter yet, so it is not a valid reference; do not use it). Absolute roots `C:/Users/Micha Bigler/Documents/webapps/Kira` and `.../innoservice`.
+
+**Kira files to mirror (template adaptation, not a copy of Kira domain code):**
+
+| Kira path | Template target |
+|---|---|
+| `backend/backend/test_management_urls.py` | `backend/backend/test_management_urls.py` (include `api/test-management/` + app patterns; keep the `static/` serve line pointing at the frontend build) |
+| `backend/backend/test_management_test_settings.py` | same name (adapter unit-test settings: test_settings + `django_core_micha.test_management`) |
+| `backend/backend/local_test_management_settings.py` | same name; adapter path `users.test_management.TemplateTestManagementAdapter` |
+| `backend/trip/test_management.py` (adapter) | `backend/users/test_management.py` |
+| `backend/trip/test_test_management_adapter.py`, `test_test_management_urls.py` | `backend/users/test_test_management_adapter.py`, `backend/users/test_test_management_urls.py` |
+| `docker-compose.test-management.yml` | same name at repo root |
+| `test-management.consumer.json` | `{"version": 1, "identity": "webapp-template"}`; one comment line cannot go in JSON, so put the "replace identity with your app slug" line in `CLAUDE.md` and `docs/ONBOARDING.md` |
+| `frontend/tests/test-management-client.js`, `test-management-controller.js` | same paths; the controller's repo-root search must name `webapp-template` instead of `kira`, and its project regex `^webapp-template-tm-[a-f0-9]{32}$` |
+| `frontend/tests/test-management-profiles.spec.js` | F2 spec, same name |
+| `work-orders/KIRA-CI-1.acceptance.json` | `work-orders/WT-SYNC-2.acceptance.json` |
+| `backend/backend/privacy_manifest.py`, `backend/tests/test_privacy_adoption.py`, `frontend/src/privacy/*`, `frontend/src/__tests__/AppPrivacyRouting.test.jsx`, `frontend/src/components/__tests__/AppShell.privacy.test.jsx` | privacy wiring: manifest (necessary-only default, no optional purposes registered by the template), `api/privacy/` route, provider + banner in `App.jsx`/`index.jsx` |
+| `backend/backend/settings.py`, `urls.py`, `test_settings.py`, `backend/tests/test_security_settings.py`, `test_ws_inventory.py`, `test_permission_inventory.py`, `project.yaml` `tests:` block, `.github/workflows/*.yml`, `backend/conftest.py`, `backend/pytest.ini`, `frontend/vitest.config.js`, `frontend/package.json` scripts | diff each against the template file and adopt only what a NEW app needs |
+
+**Template models and permissions** (verified): `users.UserProfile` (role in `ROLE_DEFINITIONS`: none 0, collaborator 1, supervisor 2, admin 3, `settings.py:44`), `users.AuthPolicy`, `utils.PrivacyStatement`, `utils.CookieStatement`. API: `api/users/` is `users.views.UserViewSet(BaseUserViewSet)` (permission rules live in `django_core_micha.auth`; read them, do not change them). `INVITE_MIN_ROLE_LEVEL = 2`. There is no domain model; do NOT add a model or a migration for the fixture.
+
+**Adapter design (binding):**
+- Two account templates of different permissions: `supervisor` (UserProfile role `supervisor`) and `collaborator` (role `collaborator`). Set the role through the profile that the `post_save` receiver creates (`users/models.py:16`); `effective` reports it.
+- One synthetic fixture on the template's own models: `managed-user` = a run-owned synthetic user row with a profile (role `none`), parameterised by the supervisor account, marked with a run-handle marker in its username, recorded in `adapter_state`. No new table.
+- F2 behaviour: a permitted action for the supervisor and a server-enforced refusal for the collaborator against that fixture on `api/users/`. Read `BaseUserViewSet` to choose a real permitted/refused pair (for example list/retrieve versus an invite or role change guarded by `INVITE_MIN_ROLE_LEVEL`); state which pair you used in the spec's first comment line. The refused action must leave the fixture row unchanged (assert it).
+- Cleanup (`reset_run`, `close_run`) deletes only run-owned rows verified by marker and the `Collector` allow-list (Kira pattern, allow-list: `auth.user`, `users.userprofile`, `account.emailaddress`, `account.emailconfirmation`, plus any other label you can show the template creates; fail closed otherwise). Sessions of run users are removed.
+- Sentinel test per WS-GOV-121, all four points (`work-orders/WS-GOV-121.md` lines 21-28): outside the run create an ordinary user with profile + `EmailAddress` + a logged-in session, plus a row of every model the cleanup deletes or modifies (user, profile, email address, the fixture's user type); run account creation, fixture preparation, then BOTH `reset_run` and `close_run`; assert every sentinel row and its field values unchanged and the sentinel session still present; assert the run's own rows and sessions are gone.
+- Settings test (required): ordinary, staging and production settings (`backend.settings` with `ENV_TYPE` local/staging/production variants, and `backend.test_settings`) must NOT contain `django_core_micha.test_management` in `INSTALLED_APPS`, must not set `TEST_MANAGEMENT_ENABLED`, and `reverse`/URL resolution of `/api/test-management/` must 404 under their URL conf. Prove the positive case only under the dedicated test-management settings. Mirror `Kira/backend/tests/test_security_settings.py` and `innoservice`'s equivalent.
+- Permission test (required): server-side refusal for the collaborator on the F2 action using DRF `APIClient`, fixture unchanged afterwards; extend `backend/tests/test_permission_inventory.py` only if the inventory needs the new route (it should not: the test-management URLs exist only in the dedicated URL conf).
+
+**Frontend:** add the privacy provider and banner exactly as Kira/innoservice wire it with the ui-core-micha version you pin (read ui-core `CHANGELOG`/exports for the privacy exports; do not guess names). Required frontend tests: a routing test covering the privacy banner wiring and the reset routes (`/reset-request-password`, `/reset/:uid/:token`, `/invite/:uid/:token`), added to the existing `frontend/src/App.test.jsx` / `AuthRoutesIntegration.test.jsx` or a new behaviour-named file. The template's reset-request route is `/reset-request-password`: in the acceptance protocol F3 set `"routes": {"reset_request": "/reset-request-password"}`.
+
+**Acceptance protocol (`work-orders/WT-SYNC-2.acceptance.json`):** `mode: isolated`, `controller_module: frontend/tests/test-management-controller.js`; actors `supervisor` and `collaborator` plus F1 fixture `managed-user`; criteria exactly F1 (`WT-SYNC-2-F1`, actor supervisor, fixture, route that shows the user list, visible check plus an `api_expect` on `api/users/` that finds the fixture marker), F2 (`WT-SYNC-2-F2`, `spec` = the profiles spec), F3 (`WT-SYNC-2-F3`, `scenario: password_recovery`, template `supervisor`, `locale: de-CH`, routes as above). Put F3 last. Validate shape against the `acceptance.py` docstring (`C:/Users/Micha Bigler/Documents/webapps/.claude/scripts/acceptance.py`, read-only) and the Kira file.
+
+**`project.yaml` `tests:` block:** scopes `backend`, `backend_test_management`, `frontend`, same shape as Kira (`docker exec <prefix>_local-backend-1 ...`, frontend `node node_modules/vitest/vitest.mjs run` with `cwd: frontend`). The template's `container_prefix` is a placeholder: write the prefix literally as `webapp-template` and add ONE comment line "replace webapp-template with your container_prefix". Do not change the other placeholders in `project.yaml`.
+
+**Inventory (part of the deliverable):** write `work-orders/WT-SYNC-2.inventory.md` (the Orchestrator folds it into `## Completion`). Sources: the Kira and innoservice trees, `django-core-micha/CHANGELOG.md` from 3.0.0 to 3.41.4, `ui-core-micha/CHANGELOG.md` from 4.0.1 to 4.40.0, `workflow-templates/CHANGELOG.md` (or its tags/docs) from v2.13.0 to v2.17.0. Table columns: `Change | Source (release or reference file) | Class (adopt / app-specific / opt-in) | Status (adopted in <file> / skipped) | Reason or "enable by:" one line`. Every consumer-required change of a release (settings key, URL include, migration, frontend provider/export, removed or renamed export) must appear. Read changelogs by range with `Grep -n`, never whole.
+
+**Core pins (you edit the declarations; you do NOT install):** `backend/requirements.txt` `django-core-micha==3.41.4` (re-check the top entry of `django-core-micha/CHANGELOG.md`; if a newer one exists, use it and say so). `frontend/package.json` `@micha.bigler/ui-core-micha` to `4.40.0` (same re-check on `ui-core-micha/package.json` `version`, currently `4.40.0`). Do NOT edit `frontend/pnpm-lock.yaml`; the Orchestrator regenerates it. Keep allauth security emails at the shared-core defaults. If a core release requires a new Python/JS dependency in `requirements.txt`/`package.json`, add it with an exact pin (`test_requirements_pinned.py` enforces `==`) and list it in the inventory.
+
+**CI:** update `.github/workflows/ci.yml`, `main.yml`, `staging-health.yml` action refs and `app-ci.yml` inputs to what `Kira/.github/workflows/*.yml` use today (workflow-templates `v2.17.0`; `deploy-app` pinned by the same SHA Kira uses). KEEP the `is_template` deploy guard in `main.yml` and the `.github/scripts/test_ci12_deploy_workflow.py` check passing; update that script only if the guard text it matches moves, and say so. No new deploy target. This part is infra-lane: do not alter permissions blocks beyond what the Kira workflow files show.
+
+**Template guidance:** every value a new app must replace (identity in `test-management.consumer.json`, container prefix in `tests:`, fixture name/adapter, account templates) gets one comment line in the file (Python/YAML/compose/JS) or one bullet in `docs/ONBOARDING.md` for JSON; add the canonical `tests.py` / `acceptance.py` calls to `webapp-template/CLAUDE.md` (copy wording from `Kira/CLAUDE.md`/`innoservice/CLAUDE.md` if present; otherwise one short section: `python -I .claude/scripts/tests.py --repo <repo> [--scope backend|backend_test_management|frontend]` and `python -I .claude/scripts/acceptance.py --repo <repo> --wo <ID>`; calls from the workspace root).
+
+### Invariants / do-not-touch
+
+- Password-reset routes of ui-core-micha, `createAppTheme` baseline, JSONL register, LF line endings: keep.
+- `.env` is never read or created. No secrets in files. `secrets.yaml` only if a release requires a new declared variable (then list it in the inventory as `needs operator`).
+- Test-management routes/settings exist ONLY in `test_management_urls.py` and `local_test_management_settings.py`; `backend/settings.py` and `backend/urls.py` must stay free of them.
+- Do NOT edit `WORK_ORDERS.md`, `work-orders/register.jsonl`, Part A/C of this WO, `.claude/**`. Do not run Docker, pnpm, pip, `tests.py`, `acceptance.py`.
+- New files under ~400 lines; name tests by behaviour, never by WO ID.
+- Existing `backend/backend/test_ws_inventory.py` stays.
+
+### Pitfalls
+
+- Template `project_name`/`container_prefix`/ports are placeholders; the isolated instance takes identity from `test-management.consumer.json` (regex `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, max 30 chars), never from `project.yaml`.
+- Kira's adapter forbids any `payload` configuration and any baseline; keep that fail-closed behaviour.
+- Template backend uses `HEADLESS_ONLY`; the `local_test_management_settings` must still override `AUTH_METHODS["social_login"]=False`, `MAILERS` locmem, `DEBUG=False`, as in Kira. Reproduce the template's own `settings.py` names (`BASE_DIR`, `TEMPLATES`, `STATICFILES_DIRS`, `FRONTEND_BUILD_DIR` handling at `settings.py:81`).
+- `docker-compose.test-management.yml` build context/Dockerfile paths must match the template (`backend/Dockerfile`, frontend build at `frontend/build_current`).
+
+### Preamble
+
+> **You are the dispatched implementer of this work order, not its Orchestrator. Rules in `AGENTS.md` and in skills that address the Orchestrator, a Codex parent or the Expertenchat (delegation, dispatch, review, register, landing) do not apply to you. You never run `codex` or `codex exec`, never write to git, and never edit the register or `.claude/codex-status.md`.**
+>
+> **Your first tool action is the hook canary: run the shell command `codex-hook-canary-ws-gov-60` exactly (it is a command string, not a file). The expected result is a denial, `WS-GOV-60 canary: workspace hooks are active`; continue after it. If it is not denied, report that once as unverified hook coverage and continue.**
+>
+> The sections A and B of this file are the COMPLETE spec, not a plan to refine. Read the nearest `AGENTS.md` and the app `MEMORY.md` ONLY for conventions. Stay in scope; do not update `MEMORY.md`. **Do NOT edit `WORK_ORDERS.md`.** **Your tools are for editing source and test files and for running the tests you wrote — nothing else.** Do NOT install dependencies, touch a lockfile, run a package manager, or tidy up stray files; if something in the repo state blocks you, stop and report `RESULT: BLOCKED <reason>`. Do NOT `git add`/`commit`/`push`; leave every change uncommitted. WRITE the tests the `Required tests` section calls for AND RUN the ones you wrote only if they can run in the sandbox (Django tests need PostgreSQL/Docker here and Vitest needs the repo as writable root: when a run cannot work, end `RESULT: DONE` with the line `TESTS NOT RUN: <reason>`). Never start a database or Docker.
+>
+> **Files.** Read a file over ~400 lines by locating with `Grep -n` and reading only the needed range. New code goes into cohesive modules named by behaviour; a new file stays under ~400 lines.
+>
+> Narrate continuously: a `PLAN: <step1> | <step2> | …` line up front, then a single-line `PROGRESS: [<n>/<total>] <present-tense action>` before every relevant action, spaced so no gap exceeds ~2 min, plus exactly one final `RESULT: DONE|BLOCKED <reason>`.
+
+---
+
+# C. Orchestrator only — NOT ADDRESSED TO THE IMPLEMENTER
+
+> **If you are the implementer reading this work order as your own specification: STOP at this line. Everything below describes what the Orchestrator does AFTER you finish. You do none of it.**
+
+## Execution directive
+
+Configured `implementation` entry via `run-worker.py --role implementation --writes --sandbox workspace-write --infra --target-repo webapp-template`. Reviews: `--infra` lenses incl. sec_review (Tier 3, infra lane). The Orchestrator regenerates `frontend/pnpm-lock.yaml`, runs `tests.py` scopes and `acceptance.py`.
+
+## Launch / review / verification log
+
+(filled by the Orchestrator)
