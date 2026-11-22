@@ -16,3 +16,7 @@ jobs:
     secrets: inherit
     with:
       runs-on: netcup
+      # Auth smoke without a login (WFT-CI-31): opens the login page and checks
+      # that a malformed e-mail yields a translated sentence, not a raw code.
+      auth-smoke: true
+      login-path: '/login'

@@ -1,16 +1,26 @@
-// Replace webapp-template with your app identity.
+// The app identity comes from test-management.consumer.json; nothing here needs renaming.
 // Only the container receives the controller credential; JSON travels on stdin.
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const MAX_BYTES = 1024 * 1024;
 
+function consumerIdentity(root) {
+  try {
+    return JSON.parse(readFileSync(path.join(root, 'test-management.consumer.json'), 'utf8')).identity;
+  } catch {
+    return undefined;
+  }
+}
+
 export class ControllerBridge {
   constructor(project) {
-    if (!/^webapp-template-tm-[a-f0-9]{32}$/.test(project || '')) {
+    const handle = /^([a-z][a-z0-9]*(?:-[a-z0-9]+)*)-tm-[a-f0-9]{32}$/.exec(project || '');
+    if (!handle) {
       throw new Error('Invalid isolated instance handle');
     }
+    const identity = handle[1];
     let host = process.env.DOCKER_HOST;
     if (!host) {
       const context = spawnSync('docker', ['context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], {
@@ -28,10 +38,11 @@ export class ControllerBridge {
     // starts in frontend. Both resolve to the same explicit repository root.
     const roots = [...new Set([
       path.resolve(process.cwd(), '..'),
-      path.resolve(process.cwd(), '../../webapp-template'),
+      path.resolve(process.cwd(), '../..', identity),
       path.resolve(process.cwd()),
     ])].filter((root) => existsSync(path.join(root, 'docker-compose.test-management.yml')) &&
-      existsSync(path.join(root, 'frontend', 'tests', 'test-management-controller.js')));
+      existsSync(path.join(root, 'frontend', 'tests', 'test-management-controller.js')) &&
+      consumerIdentity(root) === identity);
     if (roots.length !== 1) throw new Error('Isolated controller repository is ambiguous or unavailable');
     this.cwd = roots[0];
   }

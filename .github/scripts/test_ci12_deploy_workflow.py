@@ -26,9 +26,16 @@ class CI12DeployWorkflowTests(unittest.TestCase):
 
     def test_action_pins_match_estate_standard(self):
         # publish-backend-image by tag, deploy-app by commit SHA (estate standard).
-        self.assertIn("actions/publish-backend-image@v2.17.0", MAIN_WORKFLOW)
+        active = [
+            line.strip() for line in MAIN_WORKFLOW.splitlines() if not line.strip().startswith("#")
+        ]
         self.assertIn(
-            "actions/deploy-app@788473beb2868c82d3a1dafb32076419119ab9ef", MAIN_WORKFLOW
+            "- uses: bigler-webapps/workflow-templates/.github/actions/publish-backend-image@v2.17.0",
+            active,
+        )
+        self.assertIn(
+            "- uses: bigler-webapps/workflow-templates/.github/actions/deploy-app@788473beb2868c82d3a1dafb32076419119ab9ef",
+            active,
         )
 
     def test_main_yml_grants_packages_write(self):
