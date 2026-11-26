@@ -90,6 +90,9 @@ frontend/yarn-error.log*
 # macOS-spezifische Dateien
 frontend/.DS_Store
 
+# Playwright output
+frontend/test-results/
+
 memurai/*
 
 java_backend/.gradle/
